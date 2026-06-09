@@ -85,6 +85,7 @@ model Ability {
   cooldown    Int
   duration    Int?
   description String?
+  iconUrl     String?
   jobId       String?
   role        RoleName?
   category    Category

@@ -3,8 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  // url configured in prisma.config.ts
+  provider = "postgresql"
 }
 
 enum RoleName {

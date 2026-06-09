@@ -13,3 +13,70 @@ When creating or modifying code in this project, you MUST create git commits wit
 - Follow the repo's existing commit style for the message subject line
 - Never amend or force-push
 <!-- END:git-attribution -->
+
+<!-- BEGIN:vercel-cli -->
+# Vercel CLI
+
+Installed globally. Available as `vercel` or `vc`.
+
+```bash
+# Login (interactive)
+vercel login
+
+# Link project to Vercel
+vercel link
+
+# Deploy to preview
+vercel
+
+# Deploy to production
+vercel --prod
+
+# Pull environment variables from Vercel
+vercel env pull .env.local
+
+# List deployments
+vercel list
+
+# View logs for a deployment
+vercel logs <deployment-url>
+```
+
+Always run from the project root (`/home/skye/xivmitplan`).
+<!-- END:vercel-cli -->
+
+<!-- BEGIN:auth0-cli -->
+# Auth0 CLI
+
+Installed at `/home/skye/.local/bin/auth0` (add to `$PATH` if needed).
+
+```bash
+# Login (opens browser for device authorization)
+auth0 login
+
+# Create a Regular Web Application
+auth0 apps create \
+  --name "xivmitplan" \
+  --type regular \
+  --callbacks "http://localhost:3000/auth/callback,https://<production-url>/auth/callback" \
+  --logout-urls "http://localhost:3000,https://<production-url>" \
+  --reveal-secrets
+
+# List applications
+auth0 apps list
+
+# Show application details
+auth0 apps show <app-id>
+
+# Update application
+auth0 apps update <app-id> --callbacks "..."
+
+# Tail tenant logs
+auth0 logs tail
+
+# Get help
+auth0 help
+```
+
+After creating an app, use `auth0 apps show <app-id> --json` to get the `client_id` and `client_secret`.
+<!-- END:auth0-cli -->

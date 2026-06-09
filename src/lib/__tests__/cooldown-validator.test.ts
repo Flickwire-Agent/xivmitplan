@@ -97,16 +97,14 @@ describe("validatePlan", () => {
       expect(issues).toEqual([]);
     });
 
-    it("returns MISSING warnings for unassigned critical timestamps", () => {
+    it("returns empty array when no abilities assigned", () => {
       const issues = validatePlan(makePlan(
         [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
         [
           { id: "pld", label: "Paladin", jobName: "Paladin", role: "TANK", abilities: [], events: [] },
         ],
       ));
-      const missing = issues.filter((i) => i.type === "MISSING");
-      expect(missing).toHaveLength(1);
-      expect(missing[0].timestampLabel).toBe("Raidwide");
+      expect(issues).toEqual([]);
     });
   });
 
@@ -213,25 +211,9 @@ describe("validatePlan", () => {
   });
 
   describe("missing assignment warnings", () => {
-    it("warns for unassigned critical mechanics (RAIDWIDE, TANKBUSTER, STACK, SPREAD, ENRAGE)", () => {
+    it("no longer warns for unassigned critical mechanics", () => {
       const issues = validatePlan(makePlan(
         [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
-        [
-          {
-            id: "pld", label: "Paladin", jobName: "Paladin", role: "TANK",
-            abilities: [],
-            events: [],
-          },
-        ],
-      ));
-      const missing = issues.filter((i) => i.type === "MISSING");
-      expect(missing).toHaveLength(1);
-      expect(missing[0].severity).toBe("WARNING");
-    });
-
-    it("does not warn for OTHER or ADD_PHASE mechanics", () => {
-      const issues = validatePlan(makePlan(
-        [ts(0, "Pull", "OTHER"), ts(200, "Adds", "ADD_PHASE")],
         [
           {
             id: "pld", label: "Paladin", jobName: "Paladin", role: "TANK",

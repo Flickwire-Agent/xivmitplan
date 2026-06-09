@@ -7,6 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:seed-dev": "tsx prisma/seed.ts && tsx prisma/seed.dev.ts",
+    "db:setup": "prisma migrate dev --name init && tsx prisma/seed.ts && tsx prisma/seed.dev.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

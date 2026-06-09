@@ -40,6 +40,9 @@ dev.db
 # vercel
 .vercel
 
+# neon
+.neon
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

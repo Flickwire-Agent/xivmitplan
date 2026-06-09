@@ -68,8 +68,8 @@ export default function SharedPlanPage() {
         <p className="text-muted-foreground">
           This share link may have expired or the plan was deleted.
         </p>
-        <Button asChild>
-          <Link href="/plan/new">Create Your Own Plan</Link>
+        <Button render={<Link href="/plan/new" />}>
+          Create Your Own Plan
         </Button>
       </div>
     );
@@ -92,8 +92,8 @@ export default function SharedPlanPage() {
             <Copy className="h-4 w-4 mr-1" />
             {copied ? "Copied!" : "Copy Link"}
           </Button>
-          <Button size="sm" asChild>
-            <Link href={`/plan/${plan.id}`}>Fork this Plan</Link>
+          <Button size="sm" render={<Link href={`/plan/${plan.id}`} />}>
+            Fork this Plan
           </Button>
         </div>
       </div>

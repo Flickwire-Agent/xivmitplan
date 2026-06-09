@@ -170,7 +170,7 @@ export function TimelineGrid({
                     >
                       {ability ? (
                         <Tooltip>
-                          <TooltipTrigger asChild>
+                          <TooltipTrigger>
                             <div className="flex items-center justify-center gap-1">
                               <span
                                 className={cn(

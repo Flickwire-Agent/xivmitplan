@@ -29,8 +29,8 @@ export default function PlansPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Plans</h1>
-        <Button asChild>
-          <Link href="/plan/new"><Plus className="h-4 w-4 mr-1" /> New Plan</Link>
+        <Button render={<Link href="/plan/new" />}>
+          <Plus className="h-4 w-4" /> New Plan
         </Button>
       </div>
 

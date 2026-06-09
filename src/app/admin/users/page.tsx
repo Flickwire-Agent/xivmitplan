@@ -95,7 +95,7 @@ export default function AdminUsersPage() {
                     {user.bannedAt ? (
                       <Badge variant="destructive">Banned</Badge>
                     ) : (
-                      <Badge variant="success">Active</Badge>
+                      <Badge variant="secondary">Active</Badge>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">

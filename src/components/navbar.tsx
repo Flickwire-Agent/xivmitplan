@@ -11,11 +11,11 @@ export function Navbar() {
           <span>xivmitplan</span>
         </Link>
         <nav className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/plan/new">New Plan</Link>
+          <Button variant="ghost" size="sm" render={<Link href="/plan/new" />}>
+            New Plan
           </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <a href="/auth/login">Sign In</a>
+          <Button variant="ghost" size="sm" render={<a href="/auth/login" />}>
+            Sign In
           </Button>
         </nav>
       </div>

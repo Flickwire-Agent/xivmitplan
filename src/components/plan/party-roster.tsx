@@ -113,6 +113,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                 <Select
                   value={char.jobId}
                   onValueChange={(newJobId) => {
+                    if (newJobId === null) return;
                     const newJob = jobs.find((j) => j.id === newJobId);
                     if (newJob) {
                       onChangeJob(char.id, newJob.id, newJob.name, newJob.abilities);
@@ -143,7 +144,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
 
         {characters.length < 8 && (
           <div className="flex gap-2">
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
+            <Select value={selectedRole} onValueChange={(v) => v !== null && setSelectedRole(v)}>
               <SelectTrigger className="w-28">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
@@ -153,7 +154,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedJob} onValueChange={setSelectedJob}>
+            <Select value={selectedJob} onValueChange={(v) => v !== null && setSelectedJob(v)}>
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Select a job..." />
               </SelectTrigger>

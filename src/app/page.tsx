@@ -17,11 +17,11 @@ export default function Home() {
           plans with your static.
         </p>
         <div className="flex gap-4">
-          <Button size="lg" asChild>
-            <Link href="/plan/new">Create a Plan</Link>
+          <Button size="lg" render={<Link href="/plan/new" />}>
+            Create a Plan
           </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/plan">Browse Plans</Link>
+          <Button size="lg" variant="outline" render={<Link href="/plan" />}>
+            Browse Plans
           </Button>
         </div>
       </section>

@@ -20,12 +20,14 @@ type Ability = {
   duration: number | null;
   category: string;
   sharedSlot: string | null;
+  iconUrl?: string | null;
 };
 
 type Job = {
   id: string;
   name: string;
   role: string;
+  iconUrl?: string | null;
   abilities: Ability[];
 };
 
@@ -41,9 +43,9 @@ type Character = {
 
 interface PartyRosterProps {
   characters: Character[];
-  onAdd: (jobId: string, jobName: string, abilities: Ability[]) => void;
+  onAdd: (jobId: string, jobName: string, abilities: Ability[], iconUrl?: string | null) => void;
   onRemove: (id: string) => void;
-  onChangeJob: (charId: string, jobId: string, jobName: string, abilities: Ability[]) => void;
+  onChangeJob: (charId: string, jobId: string, jobName: string, abilities: Ability[], iconUrl?: string | null) => void;
 }
 
 const roleColors: Record<string, string> = {
@@ -75,7 +77,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
     if (!selectedJob) return;
     const job = jobs.find((j) => j.id === selectedJob);
     if (job) {
-      onAdd(job.id, job.name, job.abilities);
+      onAdd(job.id, job.name, job.abilities, job.iconUrl);
       setSelectedJob("");
     }
   };
@@ -101,20 +103,27 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
             const job = jobs.find((j) => j.id === char.jobId);
             const role = job?.role ?? "";
             return (
-              <div
+               <div
                 key={char.id}
                 className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm"
               >
                 <Badge className={roleColors[role] ?? ""} variant="secondary">
                   {roleLabel(role)}
                 </Badge>
+                {job?.iconUrl && (
+                  <img
+                    src={job.iconUrl}
+                    alt={job.name}
+                    className="h-5 w-5 object-contain"
+                  />
+                )}
                 <Select
                   value={char.jobId}
                   onValueChange={(newJobId) => {
                     if (newJobId === null) return;
                     const newJob = jobs.find((j) => j.id === newJobId);
                     if (newJob) {
-                      onChangeJob(char.id, newJob.id, newJob.name, newJob.abilities);
+                      onChangeJob(char.id, newJob.id, newJob.name, newJob.abilities, newJob.iconUrl);
                     }
                   }}
                 >
@@ -124,7 +133,16 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                   <SelectContent>
                     {jobs.map((j) => (
                       <SelectItem key={j.id} value={j.id}>
-                        {j.name} ({j.id})
+                        <span className="flex items-center gap-2">
+                          {j.iconUrl && (
+                            <img
+                              src={j.iconUrl}
+                              alt={j.name}
+                              className="h-4 w-4 object-contain"
+                            />
+                          )}
+                          {j.name} ({j.id})
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>

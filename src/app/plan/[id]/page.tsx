@@ -23,7 +23,8 @@ type PlanCharacter = {
   jobName: string;
   label: string;
   slotIndex: number;
-  abilities: Array<{ id: string; name: string; cooldown: number; duration: number | null; category: string; sharedSlot: string | null }>;
+  iconUrl?: string | null;
+  abilities: Array<{ id: string; name: string; cooldown: number; duration: number | null; category: string; sharedSlot: string | null; iconUrl?: string | null }>;
   events: Array<{ id: string; timestampIndex: number; abilityId: string; note: string | null }>;
 };
 
@@ -68,6 +69,7 @@ export default function EditPlanPage() {
             jobName: c.job.name,
             label: c.label ?? c.job.name,
             slotIndex: c.slotIndex,
+            iconUrl: c.job.iconUrl,
             abilities: c.job.abilities.map((a) => ({
               id: a.id,
               name: a.name,
@@ -75,6 +77,7 @@ export default function EditPlanPage() {
               duration: a.duration,
               category: a.category,
               sharedSlot: a.sharedSlot,
+              iconUrl: a.iconUrl,
             })),
             events: c.events.map((e) => ({
               id: e.id,
@@ -104,7 +107,7 @@ export default function EditPlanPage() {
               id: c.jobId,
               name: c.jobName,
               role: "TANK" as any,
-              iconUrl: null,
+              iconUrl: c.iconUrl ?? null,
               abilities: c.abilities.map((a) => ({
                 id: a.id,
                 name: a.name,
@@ -115,6 +118,7 @@ export default function EditPlanPage() {
                 role: null,
                 category: a.category as any,
                 sharedSlot: a.sharedSlot as any,
+                iconUrl: a.iconUrl ?? null,
                 createdAt: new Date(),
               })),
             },
@@ -135,6 +139,7 @@ export default function EditPlanPage() {
                 role: null,
                 category: "PERSONAL" as any,
                 sharedSlot: null,
+                iconUrl: null,
                 createdAt: new Date(),
               },
             })),
@@ -146,11 +151,11 @@ export default function EditPlanPage() {
     }
   }, [characters, plan]);
 
-  const addCharacter = (jobId: string, jobName: string, abilities: PlanCharacter["abilities"]) => {
+  const addCharacter = (jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
     if (characters.length >= 8) return;
     setCharacters([...characters, {
       id: crypto.randomUUID(), jobId, jobName, label: jobName,
-      slotIndex: characters.length, abilities, events: [],
+      slotIndex: characters.length, abilities, events: [], iconUrl,
     }]);
   };
 
@@ -158,9 +163,9 @@ export default function EditPlanPage() {
     setCharacters(characters.filter((c) => c.id !== id));
   };
 
-  const updateCharacterJob = (charId: string, jobId: string, jobName: string, abilities: PlanCharacter["abilities"]) => {
+  const updateCharacterJob = (charId: string, jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
     setCharacters(characters.map((c) =>
-      c.id === charId ? { ...c, jobId, jobName, label: jobName, abilities, events: [] } : c
+      c.id === charId ? { ...c, jobId, jobName, label: jobName, abilities, events: [], iconUrl } : c
     ));
   };
 

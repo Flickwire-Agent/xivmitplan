@@ -27,6 +27,7 @@ type Ability = {
   duration: number | null;
   category: string;
   sharedSlot: string | null;
+  iconUrl?: string | null;
 };
 
 type Character = {
@@ -136,7 +137,7 @@ export function TimelineGrid({
                 <td className="sticky left-0 z-10 bg-background px-3 py-2 font-medium">
                   <div className="flex flex-col">
                     <span>{char.label}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       {char.jobName}
                     </span>
                   </div>
@@ -171,14 +172,21 @@ export function TimelineGrid({
                         <Tooltip>
                           <TooltipTrigger>
                             <div className="flex items-center justify-center gap-1">
+                              {ability.iconUrl && (
+                                <img
+                                  src={ability.iconUrl}
+                                  alt={ability.name}
+                                  className="h-5 w-5 object-contain shrink-0"
+                                />
+                              )}
                               <span
                                 className={cn(
-                                  "inline-block w-2 h-2 rounded-full",
+                                  "inline-block w-2 h-2 rounded-full shrink-0",
                                   categoryColors[ability.category] ??
                                     "bg-gray-500",
                                 )}
                               />
-                              <span className="text-xs truncate max-w-[80px]">
+                              <span className="text-xs truncate max-w-[60px]">
                                 {ability.name}
                               </span>
                               <button
@@ -186,7 +194,7 @@ export function TimelineGrid({
                                   e.stopPropagation();
                                   onRemove(char.id, i);
                                 }}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground shrink-0"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -325,8 +333,17 @@ function AbilitySelectorDialog({
                       }}
                       className="w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors text-sm"
                     >
-                      <div className="font-medium">{ability.name}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 font-medium">
+                        {ability.iconUrl && (
+                          <img
+                            src={ability.iconUrl}
+                            alt={ability.name}
+                            className="h-6 w-6 object-contain shrink-0"
+                          />
+                        )}
+                        <span>{ability.name}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground ml-8">
                         CD: {ability.cooldown}s
                         {ability.duration ? ` | Dur: ${ability.duration}s` : ""}
                         {ability.sharedSlot ? ` | Slot: ${ability.sharedSlot}` : ""}

@@ -17,7 +17,8 @@ type PlanCharacter = {
   jobName: string;
   label: string;
   slotIndex: number;
-  abilities: Array<{ id: string; name: string; cooldown: number; duration: number | null; category: string; sharedSlot: string | null }>;
+  iconUrl?: string | null;
+  abilities: Array<{ id: string; name: string; cooldown: number; duration: number | null; category: string; sharedSlot: string | null; iconUrl?: string | null }>;
   events: Array<{ id: string; timestampIndex: number; abilityId: string; note: string | null }>;
 };
 
@@ -64,7 +65,7 @@ export default function NewPlanPage() {
         jobId: c.jobId,
         label: c.label,
         slotIndex: c.slotIndex,
-        job: { id: c.jobId, name: c.jobName, role: "TANK" as any, iconUrl: null, abilities: c.abilities.map(a => ({ id: a.id, name: a.name, cooldown: a.cooldown, duration: a.duration, description: null, jobId: c.jobId, role: null, category: a.category as any, sharedSlot: a.sharedSlot as any, createdAt: new Date() })) },
+        job: { id: c.jobId, name: c.jobName, role: "TANK" as any, iconUrl: c.iconUrl ?? null, abilities: c.abilities.map(a => ({ id: a.id, name: a.name, cooldown: a.cooldown, duration: a.duration, description: null, jobId: c.jobId, role: null, category: a.category as any, sharedSlot: a.sharedSlot as any, iconUrl: a.iconUrl ?? null, createdAt: new Date() })) },
         events: c.events.map((e) => ({
           id: e.id,
           planCharacterId: c.id,
@@ -82,6 +83,7 @@ export default function NewPlanPage() {
             role: null,
             category: "PERSONAL" as any,
             sharedSlot: null,
+            iconUrl: null,
             createdAt: new Date(),
           },
         })),
@@ -98,7 +100,7 @@ export default function NewPlanPage() {
     }
   }, [characters, selectedFight, runValidation]);
 
-  const addCharacter = (jobId: string, jobName: string, abilities: PlanCharacter["abilities"]) => {
+  const addCharacter = (jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
     if (characters.length >= 8) return;
     const newChar: PlanCharacter = {
       id: crypto.randomUUID(),
@@ -108,6 +110,7 @@ export default function NewPlanPage() {
       slotIndex: characters.length,
       abilities,
       events: [],
+      iconUrl,
     };
     setCharacters([...characters, newChar]);
   };
@@ -116,9 +119,9 @@ export default function NewPlanPage() {
     setCharacters(characters.filter((c) => c.id !== id));
   };
 
-  const updateCharacterJob = (charId: string, jobId: string, jobName: string, abilities: PlanCharacter["abilities"]) => {
+  const updateCharacterJob = (charId: string, jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
     setCharacters(characters.map((c) =>
-      c.id === charId ? { ...c, jobId, jobName, label: jobName, abilities, events: [] } : c
+      c.id === charId ? { ...c, jobId, jobName, label: jobName, abilities, events: [], iconUrl } : c
     ));
   };
 

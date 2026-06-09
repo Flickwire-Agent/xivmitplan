@@ -103,3 +103,80 @@ Tests are co-located with source files as `*.test.ts` or `*.test.tsx`:
 
 Run tests before committing to catch regressions.
 <!-- END:test-suite -->
+
+<!-- BEGIN:progress-tracker -->
+# Progress Tracker
+
+## Goal
+Fetch real job/ability icons from XIVApi and display them in the UI.
+
+## Key Constraints
+- XIVApi REST API (`https://xivapi.com`) for FFXIV game data lookups
+- Tech stack: Next.js 16 (App Router, TS), Auth0 v4, Prisma v7, Tailwind v4, shadcn/ui v4 (Base UI)
+- Database: SQLite (`@prisma/adapter-libsql`) local dev, PostgreSQL (`@prisma/adapter-pg`) on Vercel (Neon)
+- Auth: Auth0 v4 SDK, tenant `xivarbitrage.eu.auth0.com`
+- Git: `--author="Agent <agent@opencode.ai>"` + `Co-authored-by: Skye Brady <skye@blueskye.co.uk>`
+
+## Done
+- App scaffolded, built, tested (39 pass), deployed to Vercel (`https://xivmitplan.vercel.app`)
+- Seed with 22 fights (M1S–M12S), 21 jobs, 51 abilities; EX/Ult fights retained
+- Role-based abilities filtered via `jobId` scalar + `role` field
+- Auth-aware navbar, Share button, loading skeletons, ability search/filter, party roster
+- 3 commits pushed: `c26afc8` (seed), `a1580f2` (UI+tests), `7067089` (role-based fix)
+- **All 51 ability IDs verified with real icons from XIVApi**
+
+## Inferred Ability ID Ranges
+- 1–200: ARR base (Hallowed Ground=30, Rampart=10, Sentinel=17, Provoke=18, etc.)
+- 3538–3639: HW (Sheltron=3542, Divine Veil=3540, Living Dead=3638, Shadow Wall=3636)
+- 7385–7432: SB (Passage=7385, Shake It Off=7388, Troubadour=7405, Divine Benison=7432)
+- 7535–7560: ShB role (Reprisal=7535, Feint=7549, Addle=7560)
+- 16001–16559: ShB (Shield Samba=16012, Heart of Corundum=25758, Temperance=16536)
+- 16889–25875: ShB/EW (Tactician=16889, Magick Barrier=25857, Expedient=25868)
+- **34650–34691**: Dawntrail PCT (PvE with real icons in `/i/003000/0038xx.png`)
+- 36920: Dawntrail PLD (Guardian)
+- 37180–38994: Placeholder/dummy entries (no class links, placeholder icons)
+- 39100–39199: Viper actions
+- 39200–39216: PCT PvP entries (icons in `/i/009000/0097xx.png`)
+
+## Verified PCT Action Map (346xx — Real PvE IDs)
+| ID | Name | Icon | Recast |
+|----|------|------|--------|
+| 34650 | Fire in Red | /i/003000/003801.png | 2.5s |
+| 34651 | Aero in Green | /i/003000/003802.png | 2.5s |
+| 34652 | Water in Blue | /i/003000/003803.png | 2.5s |
+| 34653 | Blizzard in Cyan | /i/003000/003804.png | 3.3s |
+| 34654 | Stone in Yellow | /i/003000/003805.png | 3.3s |
+| 34655 | Thunder in Magenta | /i/003000/003806.png | 3.3s |
+| 34656–34661 | AOE II variants | /i/003000/003807–003812.png | — |
+| 34662 | Holy in White | /i/003000/003813.png | 2.5s |
+| 34663 | Comet in Black | /i/003000/003814.png | 3.3s |
+| 34664–34669 | Motifs (Pom/Wing/Claw/Maw/Hammer/Starry Sky) | 003815–003820 | 4s |
+| 34670–34673 | Muses (Pom/Winged/Clawed/Fanged) | 003821–003824 | 40s |
+| 34674 | Striking Muse | /i/003000/003825.png | 60s |
+| 34675 | Starry Muse | /i/003000/003826.png | 120s |
+| 34676 | Mog of the Ages | /i/003000/003827.png | 30s |
+| 34677 | Retribution of the Madeen | /i/003000/003828.png | 30s |
+| 34678–34680 | Hammer Stamp/Brush/Polishing | 003829–003831 | 2.5s |
+| 34681 | Star Prism | /i/003000/003832.png | 2.5s |
+| 34683 | Subtractive Palette | /i/003000/003833.png | 1s |
+| 34684 | Smudge | /i/003000/003834.png | 20s |
+| **34685** | **Tempera Coat** | **/i/003000/003835.png** | **120s** |
+| **34686** | **Tempera Grassa** | **/i/003000/003836.png** | **1s** |
+| 34688 | Rainbow Drip | /i/003000/003838.png | 6s |
+| 34689–34691 | Creature/Weapon/Landscape Motif | 003839–003841 | 4s |
+
+## Next Steps
+1. Run `prisma migrate dev` for added `iconUrl` on Ability
+2. Update `prisma/seed.ts`:
+   - Replace PCT IDs from 389xx → 346xx
+   - Add `iconUrl` for all 51 abilities
+3. Display icons in `PartyRoster`, `TimelineGrid`, `AbilitySelectorDialog`
+4. Verify build, run tests, commit & push
+
+## Relevant Files
+- `/home/skye/xivmitplan/prisma/schema.prisma` — `Ability.iconUrl` added
+- `/home/skye/xivmitplan/prisma/seed.ts` — needs ID/icon updates
+- `/home/skye/xivmitplan/scripts/lookup-abilities.mjs` — batch lookup script
+- `/home/skye/xivmitplan/src/components/plan/party-roster.tsx` — add icons
+- `/home/skye/xivmitplan/src/components/plan/timeline-grid.tsx` — add icons
+<!-- END:progress-tracker -->

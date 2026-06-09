@@ -188,6 +188,30 @@ export default function EditPlanPage() {
     ));
   };
 
+  const moveAbility = (sourceCharId: string, sourceTimestampIndex: number, targetCharId: string, targetTimestampIndex: number, abilityId: string) => {
+    setCharacters(characters.map((c) => {
+      if (c.id === sourceCharId && c.id === targetCharId) {
+        const filtered = c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex);
+        const existing = filtered.find((e) => e.timestampIndex === targetTimestampIndex);
+        const newEvents = existing
+          ? filtered.map((e) => e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e)
+          : [...filtered, { id: crypto.randomUUID(), timestampIndex: targetTimestampIndex, abilityId, note: null }];
+        return { ...c, events: newEvents };
+      }
+      if (c.id === sourceCharId) {
+        return { ...c, events: c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex) };
+      }
+      if (c.id === targetCharId) {
+        const existing = c.events.find((e) => e.timestampIndex === targetTimestampIndex);
+        const newEvents = existing
+          ? c.events.map((e) => e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e)
+          : [...c.events, { id: crypto.randomUUID(), timestampIndex: targetTimestampIndex, abilityId, note: null }];
+        return { ...c, events: newEvents };
+      }
+      return c;
+    }));
+  };
+
   const sharePlan = async () => {
     if (!plan) return;
     setSharing(true);
@@ -302,6 +326,7 @@ export default function EditPlanPage() {
               validation={validation}
               onAssign={assignAbility}
               onRemove={removeAbility}
+              onMoveAbility={moveAbility}
             />
           )}
         </div>

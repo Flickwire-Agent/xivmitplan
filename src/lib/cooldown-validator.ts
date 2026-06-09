@@ -86,17 +86,29 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
   }
 
   // Check for unassigned critical timestamps (optional, WARNING level)
-  const assignedTimestamps = new Set<number>();
-  for (const character of characters) {
-    for (const event of character.events) {
-      assignedTimestamps.add(event.timestampIndex);
-    }
-  }
-
+  // Suppress warnings when a previous ability's duration covers the timestamp
   for (const char of characters) {
+    const coveredByDuration = new Set<number>();
+    const sortedEvents = char.events.sort((a, b) => a.timestampIndex - b.timestampIndex);
+    for (const event of sortedEvents) {
+      const ability = event.ability;
+      if (!ability.duration) continue;
+      const ts = timestamps[event.timestampIndex];
+      if (!ts) continue;
+      const effectEnd = ts.time + ability.duration;
+      for (let j = event.timestampIndex + 1; j < timestamps.length; j++) {
+        if (timestamps[j].time < effectEnd) {
+          coveredByDuration.add(j);
+        } else {
+          break;
+        }
+      }
+    }
+
     for (let i = 0; i < timestamps.length; i++) {
       const ts = timestamps[i];
       if (ts.type === "OTHER" || ts.type === "ADD_PHASE") continue;
+      if (coveredByDuration.has(i)) continue;
       const hasEvent = char.events.some(e => e.timestampIndex === i);
       if (!hasEvent) {
         issues.push({

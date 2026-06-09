@@ -46,15 +46,8 @@ interface TimelineGridProps {
   validation: ValidationIssue[];
   onAssign: (charId: string, timestampIndex: number, abilityId: string) => void;
   onRemove: (charId: string, timestampIndex: number) => void;
+  onMoveAbility: (sourceCharId: string, sourceTimestampIndex: number, targetCharId: string, targetTimestampIndex: number, abilityId: string) => void;
 }
-
-const categoryColors: Record<string, string> = {
-  MITIGATION: "bg-blue-500",
-  HEALING: "bg-green-500",
-  SHIELD: "bg-yellow-500",
-  INVULN: "bg-red-500",
-  PERSONAL: "bg-gray-500",
-};
 
 const eventTypeColors: Record<string, string> = {
   RAIDWIDE: "bg-orange-100 text-orange-800 border-orange-300",
@@ -73,11 +66,67 @@ export function TimelineGrid({
   validation,
   onAssign,
   onRemove,
+  onMoveAbility,
 }: TimelineGridProps) {
   const [selectedCell, setSelectedCell] = useState<{
     charId: string;
     timestampIndex: number;
   } | null>(null);
+
+  const [dragSource, setDragSource] = useState<{
+    charId: string;
+    timestampIndex: number;
+    abilityId: string;
+  } | null>(null);
+
+  const categoryColors: Record<string, string> = {
+    MITIGATION: "bg-blue-500",
+    HEALING: "bg-green-500",
+    SHIELD: "bg-yellow-500",
+    INVULN: "bg-red-500",
+    PERSONAL: "bg-gray-500",
+  };
+
+  const categoryBarColors: Record<string, string> = {
+    MITIGATION: "#60a5fa",
+    HEALING: "#4ade80",
+    SHIELD: "#facc15",
+    INVULN: "#f87171",
+    PERSONAL: "#9ca3af",
+  };
+
+  function getDurationCoverage(): Map<string, Map<number, { ability: Ability; startIndex: number; endIndex: number }>> {
+    const coverage = new Map<string, Map<number, { ability: Ability; startIndex: number; endIndex: number }>>();
+    for (const char of characters) {
+      const charCoverage = new Map<number, { ability: Ability; startIndex: number; endIndex: number }>();
+      for (const event of char.events) {
+        const ability = char.abilities.find((a) => a.id === event.abilityId);
+        if (!ability || !ability.duration) continue;
+        const startTime = timestamps[event.timestampIndex]?.time;
+        if (startTime === undefined) continue;
+        const endTime = startTime + ability.duration;
+        const startIdx = event.timestampIndex;
+        let endIdx = startIdx;
+        for (let i = startIdx; i < timestamps.length; i++) {
+          if (timestamps[i].time < endTime) {
+            endIdx = i;
+          } else {
+            break;
+          }
+        }
+        for (let i = startIdx; i <= endIdx; i++) {
+          const existing = charCoverage.get(i);
+          if (!existing || (endIdx - startIdx) > (existing.endIndex - existing.startIndex)) {
+            charCoverage.set(i, { ability, startIndex: startIdx, endIndex: endIdx });
+          }
+        }
+      }
+      coverage.set(char.id, charCoverage);
+    }
+    return coverage;
+  }
+
+  const durationCoverage = getDurationCoverage();
 
   const getCellStatus = (charId: string, tsIndex: number) => {
     const char = characters.find((c) => c.id === charId);
@@ -154,11 +203,54 @@ export function TimelineGrid({
                     (v) => v.timestampIndex === i && v.character?.id === char.id,
                   );
 
+                  const charCoverage = durationCoverage.get(char.id);
+                  const coverage = charCoverage?.get(i);
+                  const isCovered = coverage && coverage.startIndex !== i;
+                  const isStart = coverage && coverage.startIndex === i;
+
+                  const barColor = ability
+                    ? categoryBarColors[ability.category] ?? "#9ca3af"
+                    : coverage
+                    ? categoryBarColors[coverage.ability.category] ?? "#9ca3af"
+                    : null;
+
+                  const handleDragStart = (e: React.DragEvent) => {
+                    if (!ability) return;
+                    e.dataTransfer.setData("text/plain", JSON.stringify({ charId: char.id, timestampIndex: i, abilityId: ability.id }));
+                    e.dataTransfer.effectAllowed = "move";
+                    setDragSource({ charId: char.id, timestampIndex: i, abilityId: ability.id });
+                  };
+
+                  const handleDragOver = (e: React.DragEvent) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                  };
+
+                  const handleDrop = (e: React.DragEvent) => {
+                    e.preventDefault();
+                    if (!dragSource) return;
+                    if (dragSource.charId === char.id && dragSource.timestampIndex === i) return;
+
+                    onMoveAbility(
+                      dragSource.charId,
+                      dragSource.timestampIndex,
+                      char.id,
+                      i,
+                      dragSource.abilityId,
+                    );
+                    setDragSource(null);
+                  };
+
+                  const handleDragEnd = () => {
+                    setDragSource(null);
+                  };
+
                   return (
                     <td
                       key={i}
                       className={cn(
-                        "px-2 py-2 text-center border-l last:border-r cursor-pointer transition-colors",
+                        "px-2 py-2 text-center border-l last:border-r transition-colors relative",
+                        ability ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
                         cellStyle(status),
                       )}
                       onClick={() =>
@@ -167,7 +259,18 @@ export function TimelineGrid({
                           timestampIndex: i,
                         })
                       }
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      draggable={!!ability}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
                     >
+                      {/* Duration coverage bar for cells covered by a previous ability's effect */}
+                      {isCovered && barColor && (
+                        <div className="absolute top-0 left-0 bottom-0 w-1 rounded-r" style={{ backgroundColor: barColor }} />
+                      )}
+
+                      {/* Cell content */}
                       {ability ? (
                         <Tooltip>
                           <TooltipTrigger>
@@ -210,10 +313,32 @@ export function TimelineGrid({
                             </TooltipContent>
                           )}
                         </Tooltip>
+                      ) : isCovered ? (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="flex items-center justify-center h-full min-h-[28px]">
+                              <div className="h-3 w-3 rounded-full opacity-40" style={{ backgroundColor: barColor ?? "#9ca3af" }} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">
+                              Covered by {coverage.ability.name} (placed at {timestamps[coverage.startIndex]?.label ?? `t=${coverage.startIndex}`})
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
                       ) : (
                         <span className="text-xs text-muted-foreground/60 italic">
                           +
                         </span>
+                      )}
+
+                      {/* Duration bar at bottom of placement cell showing effect span */}
+                      {isStart && coverage && coverage.endIndex > coverage.startIndex && barColor && (
+                        <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{
+                          backgroundColor: barColor,
+                          width: `${((coverage.endIndex - coverage.startIndex + 0.5) / timestamps.length) * 100}%`,
+                          maxWidth: "calc(100% - 4px)",
+                        }} />
                       )}
                     </td>
                   );

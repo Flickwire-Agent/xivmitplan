@@ -15,14 +15,32 @@ type PlanSummary = {
   characters: Array<{ job: { name: string } }>;
 };
 
+function PlanCardSkeleton() {
+  return (
+    <Card className="animate-pulse">
+      <CardHeader>
+        <div className="h-5 bg-muted rounded w-2/3" />
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="h-4 bg-muted rounded w-1/2" />
+        <div className="h-3 bg-muted rounded w-1/3" />
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function PlansPage() {
   const [plans, setPlans] = useState<PlanSummary[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/plans")
       .then((r) => r.json())
-      .then(setPlans)
-      .catch(console.error);
+      .then((data) => {
+        setPlans(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   return (
@@ -34,7 +52,13 @@ export default function PlansPage() {
         </Button>
       </div>
 
-      {plans.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <PlanCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : plans.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             No plans yet. Create your first one!

@@ -80,3 +80,26 @@ auth0 help
 
 After creating an app, use `auth0 apps show <app-id> --json` to get the `client_id` and `client_secret`.
 <!-- END:auth0-cli -->
+
+<!-- BEGIN:test-suite -->
+# Test Suite
+
+Uses **Vitest** with **@testing-library/react** and **jsdom**.
+
+```bash
+# Run all tests once
+npm run test:run
+
+# Run tests in watch mode
+npm run test
+
+# Run with coverage
+npm run test:coverage
+```
+
+Tests are co-located with source files as `*.test.ts` or `*.test.tsx`:
+- `src/lib/__tests__/` — pure logic tests (utils, cooldown-validator)
+- `src/components/*/__tests__/` — component tests (FightSelector, ValidationPanel)
+
+Run tests before committing to catch regressions.
+<!-- END:test-suite -->

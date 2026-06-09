@@ -87,8 +87,6 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
     return labels[role] ?? role;
   };
 
-  if (characters.length >= 8) return null;
-
   return (
     <Card>
       <CardHeader>
@@ -142,7 +140,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
           })}
         </div>
 
-        {characters.length < 8 && (
+        {characters.length < 8 ? (
           <div className="flex gap-2">
             <Select value={selectedRole} onValueChange={(v) => v !== null && setSelectedRole(v)}>
               <SelectTrigger className="w-28">
@@ -170,6 +168,10 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
               Add
             </Button>
           </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-2">
+            Party is full (8/8)
+          </p>
         )}
       </CardContent>
     </Card>

@@ -7,6 +7,14 @@ import { PartyRoster } from "@/components/plan/party-roster";
 import { TimelineGrid } from "@/components/plan/timeline-grid";
 import { ValidationPanel } from "@/components/plan/validation-panel";
 import { validatePlan } from "@/lib/cooldown-validator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Share2, Copy, Check } from "lucide-react";
 import type { PlanWithRelations, ValidationIssue, TimestampEntry } from "@/types";
 
 type PlanCharacter = {
@@ -39,6 +47,11 @@ export default function EditPlanPage() {
   const [validation, setValidation] = useState<ValidationIssue[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState("");
 
   useEffect(() => {
     const id = params.id as string;
@@ -170,6 +183,37 @@ export default function EditPlanPage() {
     ));
   };
 
+  const sharePlan = async () => {
+    if (!plan) return;
+    setSharing(true);
+    setShareError("");
+    try {
+      const res = await fetch(`/api/plans/${plan.id}/share`, { method: "PUT" });
+      if (res.status === 401) {
+        setShareError("Sign in required to share plans");
+        setShareDialogOpen(true);
+        return;
+      }
+      if (!res.ok) throw new Error("Failed to share");
+      const updated = await res.json();
+      setPlan({ ...plan, shareId: updated.shareId });
+      setShareUrl(`${window.location.origin}/s/${updated.shareId}`);
+      setShareDialogOpen(true);
+    } catch (err) {
+      console.error(err);
+      setShareError("Failed to share plan");
+      setShareDialogOpen(true);
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const savePlan = async () => {
     if (!plan) return;
     setSaving(true);
@@ -223,6 +267,10 @@ export default function EditPlanPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{plan.title ?? "Edit Plan"}</h1>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={sharePlan} disabled={sharing}>
+            <Share2 className="h-4 w-4 mr-1" />
+            {sharing ? "Sharing..." : "Share"}
+          </Button>
           <Button onClick={savePlan} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
@@ -259,6 +307,33 @@ export default function EditPlanPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{shareError ? "Share Failed" : "Share Plan"}</DialogTitle>
+            <DialogDescription>
+              {shareError
+                ? shareError
+                : "Anyone with this link can view your mitigation plan."}
+            </DialogDescription>
+          </DialogHeader>
+          {!shareError && shareUrl && (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="flex-1 rounded-md border px-3 py-2 text-sm"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Button size="sm" variant="outline" onClick={copyShareLink}>
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -46,13 +46,13 @@ interface TimelineGridProps {
 }
 
 const eventTypeColors: Record<string, string> = {
-  RAIDWIDE: "bg-orange-100 text-orange-800 border-orange-300",
-  TANKBUSTER: "bg-red-100 text-red-800 border-red-300",
-  STACK: "bg-blue-100 text-blue-800 border-blue-300",
-  SPREAD: "bg-purple-100 text-purple-800 border-purple-300",
-  KNOCKBACK: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  ADD_PHASE: "bg-gray-100 text-gray-800 border-gray-300",
-  ENRAGE: "bg-rose-100 text-rose-800 border-rose-300",
+  RAID_DAMAGE: "bg-red-100 text-red-800 border-red-300",
+  TANK_DAMAGE: "bg-orange-100 text-orange-800 border-orange-300",
+  POSITIONING_REQUIRED: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  AVOIDABLE_AOE: "bg-green-100 text-green-800 border-green-300",
+  DEBUFFS: "bg-cyan-100 text-cyan-800 border-cyan-300",
+  TARGETED_AOE: "bg-sky-100 text-sky-800 border-sky-300",
+  MECHANICS: "bg-violet-100 text-violet-800 border-violet-300",
   OTHER: "bg-zinc-100 text-zinc-800 border-zinc-300",
 };
 

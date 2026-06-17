@@ -23,7 +23,7 @@ export default function NewFightPage() {
 
   const addTimestamp = () => {
     const lastTime = timestamps.length > 0 ? timestamps[timestamps.length - 1].time + 30 : 0;
-    setTimestamps([...timestamps, { time: lastTime, label: "", type: "RAIDWIDE" }]);
+    setTimestamps([...timestamps, { time: lastTime, label: "", type: "RAID_DAMAGE" }]);
   };
 
   const removeTimestamp = (index: number) => {
@@ -146,13 +146,13 @@ export default function NewFightPage() {
                 onChange={(e) => updateTimestamp(i, "type", e.target.value)}
               >
                 {[
-                  "RAIDWIDE",
-                  "TANKBUSTER",
-                  "STACK",
-                  "SPREAD",
-                  "KNOCKBACK",
-                  "ADD_PHASE",
-                  "ENRAGE",
+                  "RAID_DAMAGE",
+                  "TANK_DAMAGE",
+                  "POSITIONING_REQUIRED",
+                  "AVOIDABLE_AOE",
+                  "DEBUFFS",
+                  "TARGETED_AOE",
+                  "MECHANICS",
                   "OTHER",
                 ].map((t) => (
                   <option key={t} value={t}>

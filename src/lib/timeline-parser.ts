@@ -31,16 +31,19 @@ export const DEFAULT_SPECIAL_COLORS: Record<string, string> = {
 export function categoryToEventType(category?: string): string {
   switch (category) {
     case "Raid Damage":
-      return "RAIDWIDE";
+      return "RAID_DAMAGE";
     case "Tank Damage":
-      return "TANKBUSTER";
+      return "TANK_DAMAGE";
     case "Positioning Required":
-      return "STACK";
-    case "Targeted AoE":
-      return "SPREAD";
+      return "POSITIONING_REQUIRED";
     case "Avoidable AoE":
+      return "AVOIDABLE_AOE";
     case "Debuffs":
+      return "DEBUFFS";
+    case "Targeted AoE":
+      return "TARGETED_AOE";
     case "Mechanics":
+      return "MECHANICS";
     default:
       return "OTHER";
   }
@@ -349,7 +352,7 @@ function extractMeta(
   let author: string | undefined;
 
   if (authorCell) {
-    const match = authorCell.match(/\(([^)]+)\)\s*(.+)/s);
+    const match = authorCell.match(/\(([^)]+)\)\s*([\s\S]+)/);
     if (match) {
       date = match[1]?.trim();
       author = match[2]?.trim();

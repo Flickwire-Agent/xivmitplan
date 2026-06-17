@@ -8,6 +8,9 @@ minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - '@hono/node-server@1.19.13'
   - postcss@8.5.10
+  - esbuild@0.28.1
+  - '@esbuild/*'
 overrides:
   '@hono/node-server@<1.19.13': ^1.19.13
   postcss@<8.5.10: ^8.5.10
+  esbuild@>=0.27.3 <0.28.1: '>=0.28.1'

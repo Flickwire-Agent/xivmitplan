@@ -16,6 +16,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "import:timeline": "tsx scripts/import-timeline.ts",
+    "import:arcadion": "tsx scripts/import-arcadion.ts",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:seed-dev": "tsx prisma/seed.ts && tsx prisma/seed.dev.ts",
     "db:setup": "prisma migrate dev --name init && tsx prisma/seed.ts && tsx prisma/seed.dev.ts",

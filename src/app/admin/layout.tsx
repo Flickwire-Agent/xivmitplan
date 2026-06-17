@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Shield, BarChart3, Users, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { auth0Server as auth0 } from "@/lib/auth0-server";
-import { prisma } from "@/lib/prisma";
+import { auth0 } from "@/lib/auth0";
+import { ensureUserInDb } from "@/lib/user-sync";
 
 export const metadata: Metadata = {
   title: "Admin - xivmitplan",
@@ -22,9 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/auth/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
+  const user = await ensureUserInDb();
 
   if (!user || user.role !== "ADMIN") {
     redirect("/");

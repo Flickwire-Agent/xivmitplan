@@ -4,29 +4,29 @@ A web application for **Final Fantasy XIV** raid parties to plan mitigation and 
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router, TypeScript) |
-| Auth | Auth0 (`@auth0/nextjs-auth0` v4) |
-| Database | Prisma ORM v7 + SQLite (dev) / PostgreSQL (prod) |
-| UI | Tailwind CSS v4 + shadcn/ui |
-| Icons | lucide-react |
-| Charts | recharts |
-| State | React hooks + URL params |
-| Hosting | Vercel |
+| Layer     | Choice                                           |
+| --------- | ------------------------------------------------ |
+| Framework | Next.js 16 (App Router, TypeScript)              |
+| Auth      | Auth0 (`@auth0/nextjs-auth0` v4)                 |
+| Database  | Prisma ORM v7 + SQLite (dev) / PostgreSQL (prod) |
+| UI        | Tailwind CSS v4 + shadcn/ui                      |
+| Icons     | lucide-react                                     |
+| Charts    | recharts                                         |
+| State     | React hooks + URL params                         |
+| Hosting   | pm2 (local)                                      |
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 20+
-- npm
+- pnpm
 
 ### Setup
 
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Set up environment variables
 cp .env.example .env
@@ -36,26 +36,27 @@ Then edit `.env` with your Auth0 credentials (see [Auth0 Configuration](#auth0-c
 
 ```bash
 # 3. Generate Prisma client, run migrations, and seed the database
-npx prisma generate
-npx prisma migrate deploy
-npx tsx prisma/seed.ts
+pnpm prisma:generate
+pnpm prisma:migrate
+pnpm prisma:seed
 
 # 4. Start the development server
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to use the app.
 
 ### Available Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start development server (Turbopack) |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npx prisma studio` | Open Prisma Studio (GUI for your database) |
-| `npx tsx prisma/seed.ts` | Re-seed the database |
+| Script               | Description                                |
+| -------------------- | ------------------------------------------ |
+| `pnpm run dev`       | Start development server (Turbopack)       |
+| `pnpm run build`     | Production build                           |
+| `pnpm run start`     | Start production server                    |
+| `pnpm run lint`      | Run oxlint                                 |
+| `pnpm run format`    | Run oxfmt                                  |
+| `pnpm prisma studio` | Open Prisma Studio (GUI for your database) |
+| `pnpm prisma:seed`   | Re-seed the database                       |
 
 ## Auth0 Configuration
 
@@ -108,25 +109,30 @@ src/
 
 ## Deployment
 
-### Vercel (recommended)
+Managed by **pm2** — runs locally on this machine.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+```bash
+# Build the Next.js app
+pnpm build
 
-1. Push to GitHub
-2. Import into Vercel
-3. Set environment variables:
-   - `DATABASE_URL` — Your PostgreSQL connection string
-   - `AUTH0_SECRET`, `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`
-   - `APP_BASE_URL` — Your production URL
-4. Deploy
+# Start/Restart via pm2
+pm2 start npm --name xivmitplan -- start
+pm2 restart xivmitplan
 
-> For PostgreSQL, use a provider like [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app).
->
-> **Important**: When switching to PostgreSQL, update `prisma/schema.prisma` — change the `provider` to `"postgresql"` and remove the `driverAdapters` block (driver adapters are only needed for SQLite/libsql).
+# View logs
+pm2 logs xivmitplan
+```
 
-### Other Hosting
+**Environment variables** are injected by pm2 (stored in `~/.pm2/dump.pm2`):
 
-The project is a standard Next.js app. Build with `npm run build` and start with `npm run start` on any Node.js host.
+- `DATABASE_URL` — PostgreSQL connection string
+- `APP_BASE_URL` — `http://localhost:3000`
+- `AUTH0_SECRET`, `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` — Auth0 credentials
+
+After deploying code changes:
+
+1. `pnpm build`
+2. `pm2 restart xivmitplan`
 
 ## Database
 

@@ -22,7 +22,8 @@ function ability(
     jobId: null,
     role: null,
     category: category as any,
-    sharedSlot,
+    sharedSlot: sharedSlot as any,
+    iconUrl: null as any,
     createdAt: new Date(),
   };
 }
@@ -55,8 +56,8 @@ function makePlan(
       expansion: "Dawntrail",
       tier: "Test",
       timestamps: timestamps as any,
+      icon: null as any,
       createdAt: new Date(),
-      updatedAt: new Date(),
     },
     characters: characters.map((c) => ({
       id: c.id,
@@ -100,7 +101,7 @@ describe("validatePlan", () => {
     it("returns empty array when no abilities assigned", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -123,7 +124,7 @@ describe("validatePlan", () => {
     it("returns no issues when ability used once", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -136,14 +137,14 @@ describe("validatePlan", () => {
           ],
         ),
       );
-      // Only the RAIDWIDE at t=10 is assigned with Reprisal — no conflicts
+      // Only the RAID_DAMAGE at t=10 is assigned with Reprisal — no conflicts
       expect(issues.filter((i) => i.type === "COOLDOWN")).toHaveLength(0);
     });
 
     it("detects COOLDOWN error when same ability used before cooldown expires", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAIDWIDE"), ts(30, "Second", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAID_DAMAGE"), ts(30, "Second", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -169,7 +170,11 @@ describe("validatePlan", () => {
     it("allows same ability when cooldown has elapsed", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAIDWIDE"), ts(120, "Second", "RAIDWIDE")],
+          [
+            ts(0, "Pull", "OTHER"),
+            ts(10, "First", "RAID_DAMAGE"),
+            ts(120, "Second", "RAID_DAMAGE"),
+          ],
           [
             {
               id: "pld",
@@ -195,7 +200,7 @@ describe("validatePlan", () => {
     it("detects SHARED_SLOT error when two characters use same slot at same timestamp", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -225,7 +230,7 @@ describe("validatePlan", () => {
     it("allows shared slot usage at different timestamps", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAIDWIDE"), ts(50, "Second", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAID_DAMAGE"), ts(50, "Second", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -254,7 +259,7 @@ describe("validatePlan", () => {
     it("no longer warns for unassigned critical mechanics", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -280,8 +285,8 @@ describe("validatePlan", () => {
         makePlan(
           [
             ts(0, "Pull", "OTHER"),
-            ts(10, "Raidwide", "RAIDWIDE"),
-            ts(30, "Tankbuster", "TANKBUSTER"),
+            ts(10, "Raidwide", "RAID_DAMAGE"),
+            ts(30, "Tankbuster", "TANK_DAMAGE"),
           ],
           [
             {
@@ -317,7 +322,7 @@ describe("validatePlan", () => {
       const instant = ability("Benediction", "Benediction", 0, "HEALING");
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(5, "Hit 1", "RAIDWIDE"), ts(6, "Hit 2", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(5, "Hit 1", "RAID_DAMAGE"), ts(6, "Hit 2", "RAID_DAMAGE")],
           [
             {
               id: "whm",
@@ -342,8 +347,8 @@ describe("validatePlan", () => {
         makePlan(
           [
             ts(0, "Pull", "OTHER"),
-            ts(5, "Buster 1", "TANKBUSTER"),
-            ts(8, "Buster 2", "TANKBUSTER"),
+            ts(5, "Buster 1", "TANK_DAMAGE"),
+            ts(8, "Buster 2", "TANK_DAMAGE"),
           ],
           [
             {
@@ -367,7 +372,7 @@ describe("validatePlan", () => {
     it("ignores events with out-of-bounds timestampIndex", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "Raidwide", "RAID_DAMAGE")],
           [
             {
               id: "pld",
@@ -382,7 +387,7 @@ describe("validatePlan", () => {
           ],
         ),
       );
-      // The out-of-bounds event is silently ignored, but MISSING for the RAIDWIDE
+      // The out-of-bounds event is silently ignored, but MISSING for the RAID_DAMAGE
       const cooldowns = issues.filter((i) => i.type === "COOLDOWN");
       expect(cooldowns).toHaveLength(0);
     });
@@ -390,7 +395,7 @@ describe("validatePlan", () => {
     it("tracks cooldown per-character, not globally", () => {
       const issues = validatePlan(
         makePlan(
-          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAIDWIDE"), ts(20, "Second", "RAIDWIDE")],
+          [ts(0, "Pull", "OTHER"), ts(10, "First", "RAID_DAMAGE"), ts(20, "Second", "RAID_DAMAGE")],
           [
             {
               id: "pld",

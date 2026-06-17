@@ -89,15 +89,17 @@ function buildSpreadsheet(rows: RowData[]): Spreadsheet {
 
 describe("categoryToEventType", () => {
   it("maps known categories to EventType values", () => {
-    expect(categoryToEventType("Raid Damage")).toBe("RAIDWIDE");
-    expect(categoryToEventType("Tank Damage")).toBe("TANKBUSTER");
-    expect(categoryToEventType("Positioning Required")).toBe("STACK");
-    expect(categoryToEventType("Targeted AoE")).toBe("SPREAD");
+    expect(categoryToEventType("Raid Damage")).toBe("RAID_DAMAGE");
+    expect(categoryToEventType("Tank Damage")).toBe("TANK_DAMAGE");
+    expect(categoryToEventType("Positioning Required")).toBe("POSITIONING_REQUIRED");
+    expect(categoryToEventType("Avoidable AoE")).toBe("AVOIDABLE_AOE");
+    expect(categoryToEventType("Debuffs")).toBe("DEBUFFS");
+    expect(categoryToEventType("Targeted AoE")).toBe("TARGETED_AOE");
+    expect(categoryToEventType("Mechanics")).toBe("MECHANICS");
   });
 
   it("falls back to OTHER for unknown categories", () => {
     expect(categoryToEventType(undefined)).toBe("OTHER");
-    expect(categoryToEventType("Debuffs")).toBe("OTHER");
     expect(categoryToEventType("Anything")).toBe("OTHER");
   });
 });
@@ -232,7 +234,7 @@ describe("parseTimeline", () => {
       effectSeconds: 15,
       label: "Arcadia Aflame",
       dominantCategory: "Raid Damage",
-      type: "RAIDWIDE",
+      type: "RAID_DAMAGE",
     });
 
     expect(result.blocks[1]?.events[0]).toMatchObject({
@@ -244,7 +246,7 @@ describe("parseTimeline", () => {
       effectSeconds: 246,
       label: "Double Sabat",
       dominantCategory: "Tank Damage",
-      type: "TANKBUSTER",
+      type: "TANK_DAMAGE",
     });
   });
 
@@ -284,7 +286,7 @@ describe("parseTimeline", () => {
     const event = result.blocks[0]?.events[0];
     expect(event?.segments).toHaveLength(5);
     expect(event?.dominantCategory).toBe("Targeted AoE");
-    expect(event?.type).toBe("SPREAD");
+    expect(event?.type).toBe("TARGETED_AOE");
   });
 
   it("produces a flattened, sorted list of timestamps", () => {
@@ -317,8 +319,8 @@ describe("parseTimeline", () => {
     const result = parseTimeline(spreadsheet);
 
     expect(result.timestamps).toEqual([
-      { time: 30, label: "Early Block 2", type: "OTHER" },
-      { time: 60, label: "Late Block 1", type: "OTHER" },
+      { time: 30, label: "Early Block 2", type: "MECHANICS" },
+      { time: 60, label: "Late Block 1", type: "MECHANICS" },
     ]);
   });
 
@@ -461,7 +463,7 @@ describe("toFightPayload", () => {
       expansion: "Dawntrail",
       tier: "Arcadion",
       patch: "7.2",
-      timestamps: [{ time: 10, label: "Arcadia Aflame", type: "RAIDWIDE" }],
+      timestamps: [{ time: 10, label: "Arcadia Aflame", type: "RAID_DAMAGE" }],
     });
   });
 

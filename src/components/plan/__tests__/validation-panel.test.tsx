@@ -5,8 +5,8 @@ import type { ValidationIssue, TimestampEntry } from "@/types";
 
 const timestamps: TimestampEntry[] = [
   { time: 0, label: "Pull", type: "OTHER" },
-  { time: 10, label: "Raidwide", type: "RAIDWIDE" },
-  { time: 30, label: "Tankbuster", type: "TANKBUSTER" },
+  { time: 10, label: "Raid Damage", type: "RAID_DAMAGE" },
+  { time: 30, label: "Tank Damage", type: "TANK_DAMAGE" },
 ];
 
 describe("ValidationPanel", () => {
@@ -22,7 +22,7 @@ describe("ValidationPanel", () => {
         severity: "ERROR",
         message: "Rampart is on cooldown",
         timestampIndex: 1,
-        timestampLabel: "Raidwide",
+        timestampLabel: "Raid Damage",
         time: 10,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
         ability: { id: "Rampart", name: "Rampart" },
@@ -39,7 +39,7 @@ describe("ValidationPanel", () => {
         severity: "WARNING",
         message: "No ability assigned for Paladin",
         timestampIndex: 1,
-        timestampLabel: "Raidwide",
+        timestampLabel: "Raid Damage",
         time: 10,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
@@ -53,28 +53,28 @@ describe("ValidationPanel", () => {
       {
         type: "MISSING",
         severity: "WARNING",
-        message: "Missing at Raidwide",
+        message: "Missing at Raid Damage",
         timestampIndex: 1,
-        timestampLabel: "Raidwide",
+        timestampLabel: "Raid Damage",
         time: 10,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
       {
         type: "MISSING",
         severity: "WARNING",
-        message: "Missing at Tankbuster",
+        message: "Missing at Tank Damage",
         timestampIndex: 2,
-        timestampLabel: "Tankbuster",
+        timestampLabel: "Tank Damage",
         time: 30,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
     ];
     render(<ValidationPanel issues={issues} timestamps={timestamps} />);
-    expect(screen.getByText("Missing at Raidwide")).toBeTruthy();
-    expect(screen.getByText("Missing at Tankbuster")).toBeTruthy();
-    expect(screen.getAllByText((c) => c.includes("Raidwide"))).toHaveLength(2);
-    expect(screen.getAllByText((c) => c.includes("Tankbuster"))).toHaveLength(2);
-    expect(screen.getByText("Missing at Tankbuster")).toBeTruthy();
+    expect(screen.getByText("Missing at Raid Damage")).toBeTruthy();
+    expect(screen.getByText("Missing at Tank Damage")).toBeTruthy();
+    expect(screen.getAllByText((c) => c.includes("Raid Damage"))).toHaveLength(2);
+    expect(screen.getAllByText((c) => c.includes("Tank Damage"))).toHaveLength(2);
+    expect(screen.getByText("Missing at Tank Damage")).toBeTruthy();
   });
 
   it("shows issue count in header", () => {
@@ -84,7 +84,7 @@ describe("ValidationPanel", () => {
         severity: "ERROR",
         message: "Error 1",
         timestampIndex: 1,
-        timestampLabel: "Raidwide",
+        timestampLabel: "Raid Damage",
         time: 10,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
         ability: { id: "R", name: "Reprisal" },
@@ -94,7 +94,7 @@ describe("ValidationPanel", () => {
         severity: "WARNING",
         message: "Warning 1",
         timestampIndex: 2,
-        timestampLabel: "Tankbuster",
+        timestampLabel: "Tank Damage",
         time: 30,
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },

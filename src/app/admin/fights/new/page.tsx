@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Button,
+  Card,
+  Group,
+  Stack,
+  Title,
+  TextInput,
+  Select,
+  NumberInput,
+  ActionIcon,
+} from "@mantine/core";
 import { Trash2, Plus } from "lucide-react";
 
 export default function NewFightPage() {
@@ -52,128 +61,111 @@ export default function NewFightPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">New Fight</h1>
+    <Stack gap="xl" maw={800}>
+      <Title order={1}>New Fight</Title>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Slug</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
+      <Card withBorder>
+        <Card.Section withBorder inheritPadding py="xs">
+          <Title order={3} size="h4">
+            Details
+          </Title>
+        </Card.Section>
+        <Card.Section inheritPadding py="md">
+          <Stack gap="md">
+            <Group grow>
+              <TextInput
+                label="Slug"
                 placeholder="m5s"
                 value={form.slug}
-                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                onChange={(e) => setForm({ ...form, slug: e.currentTarget.value })}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Name</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
+              <TextInput
+                label="Name"
                 placeholder="M5S - Dancing Green"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm({ ...form, name: e.currentTarget.value })}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Patch</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
+            </Group>
+            <Group grow>
+              <TextInput
+                label="Patch"
                 placeholder="7.2"
                 value={form.patch}
-                onChange={(e) => setForm({ ...form, patch: e.target.value })}
+                onChange={(e) => setForm({ ...form, patch: e.currentTarget.value })}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Boss Name</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
+              <TextInput
+                label="Boss Name"
                 placeholder="Dancing Green"
                 value={form.bossName}
-                onChange={(e) => setForm({ ...form, bossName: e.target.value })}
+                onChange={(e) => setForm({ ...form, bossName: e.currentTarget.value })}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Expansion</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={form.expansion}
-                readOnly
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tier</label>
-              <input
-                className="w-full rounded-md border px-3 py-2 text-sm"
+            </Group>
+            <Group grow>
+              <TextInput label="Expansion" value={form.expansion} readOnly />
+              <TextInput
+                label="Tier"
                 placeholder="AAC Cruiserweight"
                 value={form.tier}
-                onChange={(e) => setForm({ ...form, tier: e.target.value })}
+                onChange={(e) => setForm({ ...form, tier: e.currentTarget.value })}
               />
-            </div>
-          </div>
-        </CardContent>
+            </Group>
+          </Stack>
+        </Card.Section>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Timestamps</CardTitle>
-          <Button onClick={addTimestamp} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-1" /> Add
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {timestamps.map((ts, i) => (
-            <div key={i} className="flex gap-2 items-center">
-              <input
-                type="number"
-                className="w-20 rounded-md border px-2 py-1.5 text-sm"
-                value={ts.time}
-                onChange={(e) => updateTimestamp(i, "time", parseInt(e.target.value) || 0)}
-              />
-              <input
-                className="flex-1 rounded-md border px-2 py-1.5 text-sm"
-                placeholder="Label"
-                value={ts.label}
-                onChange={(e) => updateTimestamp(i, "label", e.target.value)}
-              />
-              <select
-                className="rounded-md border px-2 py-1.5 text-sm"
-                value={ts.type}
-                onChange={(e) => updateTimestamp(i, "type", e.target.value)}
-              >
-                {[
-                  "RAID_DAMAGE",
-                  "TANK_DAMAGE",
-                  "POSITIONING_REQUIRED",
-                  "AVOIDABLE_AOE",
-                  "DEBUFFS",
-                  "TARGETED_AOE",
-                  "MECHANICS",
-                  "OTHER",
-                ].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => removeTimestamp(i)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </CardContent>
+      <Card withBorder>
+        <Card.Section withBorder inheritPadding py="xs">
+          <Group justify="space-between">
+            <Title order={3} size="h4">
+              Timestamps
+            </Title>
+            <Button onClick={addTimestamp} size="xs" variant="outline">
+              <Plus size={14} style={{ marginRight: 4 }} /> Add
+            </Button>
+          </Group>
+        </Card.Section>
+        <Card.Section inheritPadding py="md">
+          <Stack gap="xs">
+            {timestamps.map((ts, i) => (
+              <Group key={i} gap="xs">
+                <NumberInput
+                  w={100}
+                  value={ts.time}
+                  onChange={(v) => updateTimestamp(i, "time", typeof v === "number" ? v : 0)}
+                />
+                <TextInput
+                  flex={1}
+                  placeholder="Label"
+                  value={ts.label}
+                  onChange={(e) => updateTimestamp(i, "label", e.currentTarget.value)}
+                />
+                <Select
+                  w={180}
+                  value={ts.type}
+                  onChange={(v) => v && updateTimestamp(i, "type", v)}
+                  data={[
+                    "RAID_DAMAGE",
+                    "TANK_DAMAGE",
+                    "POSITIONING_REQUIRED",
+                    "AVOIDABLE_AOE",
+                    "DEBUFFS",
+                    "TARGETED_AOE",
+                    "MECHANICS",
+                    "OTHER",
+                  ]}
+                />
+                <ActionIcon variant="subtle" color="red" onClick={() => removeTimestamp(i)}>
+                  <Trash2 size={16} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Stack>
+        </Card.Section>
       </Card>
 
       <Button onClick={handleSubmit} disabled={saving}>
         {saving ? "Creating..." : "Create Fight"}
       </Button>
-    </div>
+    </Stack>
   );
 }

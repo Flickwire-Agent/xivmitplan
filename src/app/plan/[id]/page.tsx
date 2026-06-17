@@ -1,19 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useParams } from "next/navigation";
+import {
+  Button,
+  Group,
+  Title,
+  Container,
+  Stack,
+  SimpleGrid,
+  Text,
+  Modal,
+  TextInput,
+  ActionIcon,
+} from "@mantine/core";
 import { PartyRoster } from "@/components/plan/party-roster";
 import { TimelineGrid } from "@/components/plan/timeline-grid";
 import { ValidationPanel } from "@/components/plan/validation-panel";
 import { validatePlan } from "@/lib/cooldown-validator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Share2, Copy, Check } from "lucide-react";
 import type { PlanWithRelations, ValidationIssue, TimestampEntry } from "@/types";
 
@@ -49,7 +53,6 @@ type FightData = {
 
 export default function EditPlanPage() {
   const params = useParams();
-  const router = useRouter();
   const [plan, setPlan] = useState<PlanWithRelations | null>(null);
   const [characters, setCharacters] = useState<PlanCharacter[]>([]);
   const [selectedFight, setSelectedFight] = useState<FightData | null>(null);
@@ -349,84 +352,96 @@ export default function EditPlanPage() {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-muted-foreground">Loading plan...</div>;
+    return (
+      <Text ta="center" c="dimmed" py="xl">
+        Loading plan...
+      </Text>
+    );
   }
 
   if (!plan) {
-    return <div className="p-6 text-center text-muted-foreground">Plan not found</div>;
+    return (
+      <Text ta="center" c="dimmed" py="xl">
+        Plan not found
+      </Text>
+    );
   }
 
   const timestamps = selectedFight?.timestamps ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{plan.title ?? "Edit Plan"}</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={sharePlan} disabled={sharing}>
-            <Share2 className="h-4 w-4 mr-1" />
-            {sharing ? "Sharing..." : "Share"}
-          </Button>
-          <Button onClick={savePlan} disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </div>
+    <Container size="xl" py="lg">
+      <Stack gap="xl">
+        <Group justify="space-between">
+          <Title order={1}>{plan.title ?? "Edit Plan"}</Title>
+          <Group>
+            <Button variant="outline" onClick={sharePlan} disabled={sharing}>
+              <Share2 size={16} style={{ marginRight: 4 }} />
+              {sharing ? "Sharing..." : "Share"}
+            </Button>
+            <Button onClick={savePlan} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </Group>
+        </Group>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="text-sm text-muted-foreground">
-            {selectedFight?.name} &middot; {selectedFight?.tier}
-          </div>
+        <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl">
+          <Stack gap="xl" style={{ gridColumn: "span 2" }}>
+            <Text size="sm" c="dimmed">
+              {selectedFight?.name} &middot; {selectedFight?.tier}
+            </Text>
 
-          <PartyRoster
-            characters={characters}
-            onAdd={addCharacter}
-            onRemove={removeCharacter}
-            onChangeJob={updateCharacterJob}
-          />
-
-          {characters.length > 0 && (
-            <TimelineGrid
+            <PartyRoster
               characters={characters}
-              timestamps={timestamps}
-              validation={validation}
-              onAssign={assignAbility}
-              onRemove={removeAbility}
-              onMoveAbility={moveAbility}
+              onAdd={addCharacter}
+              onRemove={removeCharacter}
+              onChangeJob={updateCharacterJob}
             />
-          )}
-        </div>
 
-        <div className="space-y-6">
-          {validation.length > 0 && <ValidationPanel issues={validation} timestamps={timestamps} />}
-        </div>
-      </div>
-
-      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{shareError ? "Share Failed" : "Share Plan"}</DialogTitle>
-            <DialogDescription>
-              {shareError ? shareError : "Anyone with this link can view your mitigation plan."}
-            </DialogDescription>
-          </DialogHeader>
-          {!shareError && shareUrl && (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={shareUrl}
-                className="flex-1 rounded-md border px-3 py-2 text-sm"
-                onClick={(e) => e.currentTarget.select()}
+            {characters.length > 0 && (
+              <TimelineGrid
+                characters={characters}
+                timestamps={timestamps}
+                validation={validation}
+                onAssign={assignAbility}
+                onRemove={removeAbility}
+                onMoveAbility={moveAbility}
               />
-              <Button size="sm" variant="outline" onClick={copyShareLink}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+            )}
+          </Stack>
+
+          <Stack gap="xl">
+            {validation.length > 0 && (
+              <ValidationPanel issues={validation} timestamps={timestamps} />
+            )}
+          </Stack>
+        </SimpleGrid>
+
+        <Modal
+          opened={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          title={shareError ? "Share Failed" : "Share Plan"}
+        >
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">
+              {shareError ? shareError : "Anyone with this link can view your mitigation plan."}
+            </Text>
+            {!shareError && shareUrl && (
+              <Group>
+                <TextInput
+                  readOnly
+                  value={shareUrl}
+                  flex={1}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <ActionIcon variant="outline" onClick={copyShareLink}>
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </ActionIcon>
+              </Group>
+            )}
+          </Stack>
+        </Modal>
+      </Stack>
+    </Container>
   );
 }

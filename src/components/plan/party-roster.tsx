@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+  Card,
+  Badge,
+  Group,
+  Text,
+  Stack,
+  ActionIcon,
+  Image,
+  Flex,
+} from "@mantine/core";
 import { X, UserPlus } from "lucide-react";
 
 type Ability = {
@@ -55,11 +57,11 @@ interface PartyRosterProps {
 }
 
 const roleColors: Record<string, string> = {
-  TANK: "bg-blue-100 text-blue-800",
-  HEALER: "bg-green-100 text-green-800",
-  MELEE: "bg-red-100 text-red-800",
-  RANGED: "bg-yellow-100 text-yellow-800",
-  CASTER: "bg-purple-100 text-purple-800",
+  TANK: "blue",
+  HEALER: "green",
+  MELEE: "red",
+  RANGED: "yellow",
+  CASTER: "violet",
 };
 
 export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyRosterProps) {
@@ -98,106 +100,99 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <UserPlus className="h-5 w-5" />
-          Party Roster ({characters.length}/8)
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {characters.map((char) => {
-            const job = jobs.find((j) => j.id === char.jobId);
-            const role = job?.role ?? "";
-            return (
-              <div
-                key={char.id}
-                className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm"
-              >
-                <Badge className={roleColors[role] ?? ""} variant="secondary">
-                  {roleLabel(role)}
-                </Badge>
-                {job?.iconUrl && (
-                  <img src={job.iconUrl} alt={job.name} className="h-5 w-5 object-contain" />
-                )}
-                <Select
-                  value={char.jobId}
-                  onValueChange={(newJobId) => {
-                    if (newJobId === null) return;
-                    const newJob = jobs.find((j) => j.id === newJobId);
-                    if (newJob) {
-                      onChangeJob(
-                        char.id,
-                        newJob.id,
-                        newJob.name,
-                        newJob.abilities,
-                        newJob.iconUrl,
-                      );
-                    }
+    <Card withBorder>
+      <Card.Section withBorder inheritPadding py="xs">
+        <Group>
+          <UserPlus size={20} />
+          <Text fw={500} size="lg">
+            Party Roster ({characters.length}/8)
+          </Text>
+        </Group>
+      </Card.Section>
+
+      <Card.Section inheritPadding mt="md">
+        <Stack gap="md">
+          <Group wrap="wrap">
+            {characters.map((char) => {
+              const job = jobs.find((j) => j.id === char.jobId);
+              const role = job?.role ?? "";
+              return (
+                <Group
+                  key={char.id}
+                  gap="xs"
+                  p="xs"
+                  style={{
+                    border: "1px solid var(--mantine-color-gray-3)",
+                    borderRadius: "var(--mantine-radius-sm)",
                   }}
                 >
-                  <SelectTrigger className="h-7 border-0 p-0 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobs.map((j) => (
-                      <SelectItem key={j.id} value={j.id}>
-                        <span className="flex items-center gap-2">
-                          {j.iconUrl && (
-                            <img src={j.iconUrl} alt={j.name} className="h-4 w-4 object-contain" />
-                          )}
-                          {j.name} ({j.id})
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <button
-                  onClick={() => onRemove(char.id)}
-                  className="ml-1 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  <Badge color={roleColors[role]} variant="light">
+                    {roleLabel(role)}
+                  </Badge>
+                  {job?.iconUrl && (
+                    <Image src={job.iconUrl} alt={job.name} h={20} w={20} fit="contain" />
+                  )}
+                  <Select
+                    value={char.jobId}
+                    onChange={(newJobId) => {
+                      if (!newJobId) return;
+                      const newJob = jobs.find((j) => j.id === newJobId);
+                      if (newJob) {
+                        onChangeJob(
+                          char.id,
+                          newJob.id,
+                          newJob.name,
+                          newJob.abilities,
+                          newJob.iconUrl,
+                        );
+                      }
+                    }}
+                    data={jobs.map((j) => ({
+                      value: j.id,
+                      label: `${j.name} (${j.id})`,
+                    }))}
+                    comboboxProps={{ withinPortal: true }}
+                    size="xs"
+                    w={120}
+                  />
+                  <ActionIcon variant="subtle" color="gray" onClick={() => onRemove(char.id)}>
+                    <X size={14} />
+                  </ActionIcon>
+                </Group>
+              );
+            })}
+          </Group>
 
-        {characters.length < 8 ? (
-          <div className="flex gap-2">
-            <Select value={selectedRole} onValueChange={(v) => v !== null && setSelectedRole(v)}>
-              <SelectTrigger className="w-28">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                {roles.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {roleLabel(r)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedJob} onValueChange={(v) => v !== null && setSelectedJob(v)}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Select a job..." />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredJobs.map((j) => (
-                  <SelectItem key={j.id} value={j.id}>
-                    {j.name} ({j.id})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={handleAdd} disabled={!selectedJob} size="sm">
-              Add
-            </Button>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-2">Party is full (8/8)</p>
-        )}
-      </CardContent>
+          {characters.length < 8 ? (
+            <Flex gap="sm">
+              <Select
+                value={selectedRole}
+                onChange={(v) => v && setSelectedRole(v)}
+                placeholder="Role"
+                data={roles.map((r) => ({ value: r, label: roleLabel(r) }))}
+                w={120}
+              />
+              <Select
+                value={selectedJob}
+                onChange={(v) => v && setSelectedJob(v)}
+                placeholder="Select a job..."
+                data={filteredJobs.map((j) => ({
+                  value: j.id,
+                  label: `${j.name} (${j.id})`,
+                }))}
+                flex={1}
+              />
+              <Button onClick={handleAdd} disabled={!selectedJob} size="xs">
+                Add
+              </Button>
+            </Flex>
+          ) : (
+            <Text size="sm" c="dimmed" ta="center" py="sm">
+              Party is full (8/8)
+            </Text>
+          )}
+        </Stack>
+      </Card.Section>
     </Card>
   );
 }

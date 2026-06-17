@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, Text } from "@mantine/core";
 import type { TimestampEntry } from "@/types";
 
 type Fight = {
@@ -28,31 +22,27 @@ interface FightSelectorProps {
 
 export function FightSelector({ fights, selected, onSelect }: FightSelectorProps) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Select Encounter</label>
+    <div>
       <Select
-        value={selected?.id ?? ""}
-        onValueChange={(id) => {
-          const fight = fights.find((f) => f.id === id);
-          if (fight) onSelect(fight);
+        label="Select Encounter"
+        placeholder="Choose a fight..."
+        value={selected?.id ?? null}
+        onChange={(id) => {
+          if (id) {
+            const fight = fights.find((f) => f.id === id);
+            if (fight) onSelect(fight);
+          }
         }}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Choose a fight..." />
-        </SelectTrigger>
-        <SelectContent>
-          {fights.map((fight) => (
-            <SelectItem key={fight.id} value={fight.id}>
-              {fight.name} ({fight.patch})
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        data={fights.map((fight) => ({
+          value: fight.id,
+          label: `${fight.name} (${fight.patch})`,
+        }))}
+      />
       {selected && (
-        <p className="text-xs text-muted-foreground">
+        <Text mt="xs" size="xs" c="dimmed">
           {selected.tier} &middot; {selected.expansion} &middot; {selected.timestamps.length}{" "}
           mechanics
-        </p>
+        </Text>
       )}
     </div>
   );

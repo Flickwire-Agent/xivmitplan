@@ -1,14 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  Badge,
+  Group,
+  Text,
+  Tooltip,
+  Modal,
+  Tabs,
+  TextInput,
+  ActionIcon,
+  Stack,
+  ScrollArea,
+  Image,
+  Box,
+} from "@mantine/core";
 import { X, Search } from "lucide-react";
 import type { ValidationIssue, TimestampEntry } from "@/types";
+import { formatTime } from "@/lib/utils";
 
 type Ability = {
   id: string;
@@ -46,14 +56,14 @@ interface TimelineGridProps {
 }
 
 const eventTypeColors: Record<string, string> = {
-  RAID_DAMAGE: "bg-red-100 text-red-800 border-red-300",
-  TANK_DAMAGE: "bg-orange-100 text-orange-800 border-orange-300",
-  POSITIONING_REQUIRED: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  AVOIDABLE_AOE: "bg-green-100 text-green-800 border-green-300",
-  DEBUFFS: "bg-cyan-100 text-cyan-800 border-cyan-300",
-  TARGETED_AOE: "bg-sky-100 text-sky-800 border-sky-300",
-  MECHANICS: "bg-violet-100 text-violet-800 border-violet-300",
-  OTHER: "bg-zinc-100 text-zinc-800 border-zinc-300",
+  RAID_DAMAGE: "red",
+  TANK_DAMAGE: "orange",
+  POSITIONING_REQUIRED: "yellow",
+  AVOIDABLE_AOE: "green",
+  DEBUFFS: "cyan",
+  TARGETED_AOE: "sky",
+  MECHANICS: "violet",
+  OTHER: "gray",
 };
 
 export function TimelineGrid({
@@ -76,11 +86,11 @@ export function TimelineGrid({
   } | null>(null);
 
   const categoryColors: Record<string, string> = {
-    MITIGATION: "bg-blue-500",
-    HEALING: "bg-green-500",
-    SHIELD: "bg-yellow-500",
-    INVULN: "bg-red-500",
-    PERSONAL: "bg-gray-500",
+    MITIGATION: "blue",
+    HEALING: "green",
+    SHIELD: "yellow",
+    INVULN: "red",
+    PERSONAL: "gray",
   };
 
   const categoryBarColors: Record<string, string> = {
@@ -145,234 +155,284 @@ export function TimelineGrid({
     return "assigned";
   };
 
-  const cellStyle = (status: string) => {
+  const cellBg = (status: string) => {
     switch (status) {
       case "assigned":
-        return "bg-green-100 border-green-300";
+        return "var(--mantine-color-green-0)";
       case "error":
-        return "bg-red-100 border-red-300";
+        return "var(--mantine-color-red-0)";
       case "warning":
-        return "bg-yellow-100 border-yellow-300";
+        return "var(--mantine-color-yellow-0)";
       default:
-        return "bg-gray-50 border-gray-200 hover:bg-gray-100";
+        return "var(--mantine-color-gray-0)";
     }
   };
 
-  const isDragging = dragSource !== null;
+  const headers = (
+    <Table.Thead>
+      <Table.Tr>
+        <Table.Th style={{ position: "sticky", left: 0, zIndex: 10, minWidth: 60, width: 60 }}>
+          Time
+        </Table.Th>
+        <Table.Th
+          style={{ position: "sticky", left: 60, zIndex: 10, minWidth: 130, maxWidth: 150 }}
+        >
+          Boss Ability
+        </Table.Th>
+        {characters.map((char) => (
+          <Table.Th key={char.id} style={{ textAlign: "center", minWidth: 100, maxWidth: 120 }}>
+            <Stack gap={0}>
+              <Text size="xs">{char.label}</Text>
+              <Text size="xs" c="dimmed">
+                {char.jobName}
+              </Text>
+            </Stack>
+          </Table.Th>
+        ))}
+      </Table.Tr>
+    </Table.Thead>
+  );
+
+  const body = (
+    <Table.Tbody>
+      {timestamps.map((ts, i) => (
+        <Table.Tr key={i}>
+          <Table.Td
+            style={{
+              position: "sticky",
+              left: 0,
+              zIndex: 10,
+              background: "var(--mantine-color-body)",
+            }}
+          >
+            <Text size="xs" c="dimmed">
+              {formatTime(ts.time)}
+            </Text>
+          </Table.Td>
+          <Table.Td
+            style={{
+              position: "sticky",
+              left: 60,
+              zIndex: 10,
+              background: "var(--mantine-color-body)",
+            }}
+          >
+            <Stack gap={2}>
+              <Text size="xs" fw={500}>
+                {ts.label}
+              </Text>
+              <Badge
+                variant="outline"
+                size="xs"
+                color={eventTypeColors[ts.type] ?? eventTypeColors.OTHER}
+              >
+                {ts.type}
+              </Badge>
+            </Stack>
+          </Table.Td>
+          {characters.map((char) => {
+            const event = char.events.find((e) => e.timestampIndex === i);
+            const ability = event ? char.abilities.find((a) => a.id === event.abilityId) : null;
+            const status = getCellStatus(char.id, i);
+            const cellIssues = validation.filter(
+              (v) => v.timestampIndex === i && v.character?.id === char.id,
+            );
+
+            const charCoverage = durationCoverage.get(char.id);
+            const coverage = charCoverage?.get(i);
+            const isCovered = coverage && coverage.startIndex !== i;
+            const isStart = coverage && coverage.startIndex === i;
+
+            const barColor = ability
+              ? (categoryBarColors[ability.category] ?? "#9ca3af")
+              : coverage
+                ? (categoryBarColors[coverage.ability.category] ?? "#9ca3af")
+                : null;
+
+            const handleDragStart = (e: React.DragEvent) => {
+              if (!ability) return;
+              e.dataTransfer.setData(
+                "text/plain",
+                JSON.stringify({ charId: char.id, timestampIndex: i, abilityId: ability.id }),
+              );
+              e.dataTransfer.effectAllowed = "move";
+              setDragSource({ charId: char.id, timestampIndex: i, abilityId: ability.id });
+            };
+
+            const handleDragOver = (e: React.DragEvent) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            };
+
+            const handleDrop = (e: React.DragEvent) => {
+              e.preventDefault();
+              if (!dragSource) return;
+              if (dragSource.charId === char.id && dragSource.timestampIndex === i) return;
+
+              onMoveAbility(
+                dragSource.charId,
+                dragSource.timestampIndex,
+                char.id,
+                i,
+                dragSource.abilityId,
+              );
+              setDragSource(null);
+            };
+
+            const handleDragEnd = () => {
+              setDragSource(null);
+            };
+
+            return (
+              <Table.Td
+                key={char.id}
+                style={{
+                  position: "relative",
+                  background: ability ? undefined : cellBg(status),
+                  cursor: ability ? "grab" : "pointer",
+                  transition: "background 0.1s",
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  textAlign: "center",
+                }}
+                onClick={() =>
+                  setSelectedCell({
+                    charId: char.id,
+                    timestampIndex: i,
+                  })
+                }
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                draggable={!!ability}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                {(isStart || isCovered) && barColor && (
+                  <Box
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      backgroundColor: barColor,
+                      opacity: isCovered && !isStart ? 0.6 : 1,
+                    }}
+                  />
+                )}
+
+                {isStart && barColor && (
+                  <Box
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      width: 3,
+                      height: 6,
+                      borderTopLeftRadius: 4,
+                      backgroundColor: barColor,
+                    }}
+                  />
+                )}
+
+                {ability ? (
+                  <Group justify="center" gap={4}>
+                    {ability.iconUrl && (
+                      <Image src={ability.iconUrl} alt={ability.name} h={20} w={20} fit="contain" />
+                    )}
+                    <Box
+                      style={{
+                        display: "inline-block",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        backgroundColor: categoryColors[ability.category] ?? "#9ca3af",
+                      }}
+                    />
+                    <Tooltip
+                      label={
+                        cellIssues.length > 0
+                          ? cellIssues.map((issue) => issue.message).join("\n")
+                          : ability.name
+                      }
+                      disabled={cellIssues.length === 0}
+                    >
+                      <Text
+                        size="xs"
+                        style={{
+                          maxWidth: 50,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {ability.name}
+                      </Text>
+                    </Tooltip>
+                    <ActionIcon
+                      variant="subtle"
+                      size="xs"
+                      color="gray"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(char.id, i);
+                      }}
+                    >
+                      <X size={12} />
+                    </ActionIcon>
+                  </Group>
+                ) : isCovered ? (
+                  <Tooltip
+                    label={`${coverage.ability.name} — placed at ${timestamps[coverage.startIndex]?.label ?? `row ${coverage.startIndex + 1}`}`}
+                  >
+                    <Box
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 32,
+                      }}
+                    >
+                      <Box
+                        style={{
+                          height: 10,
+                          width: 10,
+                          borderRadius: "50%",
+                          backgroundColor: barColor ?? "#9ca3af",
+                          opacity: 0.4,
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Text size="xs" c="dimmed" fs="italic">
+                    +
+                  </Text>
+                )}
+              </Table.Td>
+            );
+          })}
+        </Table.Tr>
+      ))}
+    </Table.Tbody>
+  );
 
   return (
-    <TooltipProvider>
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="sticky left-0 z-10 bg-muted/50 px-2 py-2 text-left font-medium min-w-[60px] w-[60px]">
-                Time
-              </th>
-              <th className="sticky left-[60px] z-10 bg-muted/50 px-2 py-2 text-left font-medium min-w-[130px] max-w-[150px]">
-                Boss Ability
-              </th>
-              {characters.map((char) => (
-                <th
-                  key={char.id}
-                  className="px-2 py-2 text-center font-medium min-w-[100px] max-w-[120px]"
-                >
-                  <div className="text-xs">{char.label}</div>
-                  <div className="text-[10px] text-muted-foreground">{char.jobName}</div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {timestamps.map((ts, i) => (
-              <tr key={i} className="border-b last:border-0">
-                <td className="sticky left-0 z-10 bg-background px-2 py-2 text-xs text-muted-foreground whitespace-nowrap w-[60px]">
-                  {formatTime(ts.time)}
-                </td>
-                <td className="sticky left-[60px] z-10 bg-background px-2 py-2 min-w-[130px] max-w-[150px]">
-                  <div className="flex flex-col gap-0.5">
-                    <div className="text-xs leading-tight font-medium">{ts.label}</div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "w-fit text-[10px] px-1 py-0",
-                        eventTypeColors[ts.type] ?? eventTypeColors.OTHER,
-                      )}
-                    >
-                      {ts.type}
-                    </Badge>
-                  </div>
-                </td>
-                {characters.map((char) => {
-                  const event = char.events.find((e) => e.timestampIndex === i);
-                  const ability = event
-                    ? char.abilities.find((a) => a.id === event.abilityId)
-                    : null;
-                  const status = getCellStatus(char.id, i);
-                  const cellIssues = validation.filter(
-                    (v) => v.timestampIndex === i && v.character?.id === char.id,
-                  );
-
-                  const charCoverage = durationCoverage.get(char.id);
-                  const coverage = charCoverage?.get(i);
-                  const isCovered = coverage && coverage.startIndex !== i;
-                  const isStart = coverage && coverage.startIndex === i;
-
-                  const barColor = ability
-                    ? (categoryBarColors[ability.category] ?? "#9ca3af")
-                    : coverage
-                      ? (categoryBarColors[coverage.ability.category] ?? "#9ca3af")
-                      : null;
-
-                  const handleDragStart = (e: React.DragEvent) => {
-                    if (!ability) return;
-                    e.dataTransfer.setData(
-                      "text/plain",
-                      JSON.stringify({ charId: char.id, timestampIndex: i, abilityId: ability.id }),
-                    );
-                    e.dataTransfer.effectAllowed = "move";
-                    setDragSource({ charId: char.id, timestampIndex: i, abilityId: ability.id });
-                  };
-
-                  const handleDragOver = (e: React.DragEvent) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = "move";
-                  };
-
-                  const handleDrop = (e: React.DragEvent) => {
-                    e.preventDefault();
-                    if (!dragSource) return;
-                    if (dragSource.charId === char.id && dragSource.timestampIndex === i) return;
-
-                    onMoveAbility(
-                      dragSource.charId,
-                      dragSource.timestampIndex,
-                      char.id,
-                      i,
-                      dragSource.abilityId,
-                    );
-                    setDragSource(null);
-                  };
-
-                  const handleDragEnd = () => {
-                    setDragSource(null);
-                  };
-
-                  return (
-                    <td
-                      key={char.id}
-                      className={cn(
-                        "px-2 py-2 text-center border-l last:border-r transition-colors relative",
-                        ability ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
-                        cellStyle(status),
-                        isDragging && !ability && "bg-blue-50/40",
-                      )}
-                      onClick={() =>
-                        setSelectedCell({
-                          charId: char.id,
-                          timestampIndex: i,
-                        })
-                      }
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                      draggable={!!ability}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                    >
-                      {/* Duration vertical bar — full height when both start and covered are handled */}
-                      {(isStart || isCovered) && barColor && (
-                        <div
-                          className={cn(
-                            "absolute left-0 top-0 bottom-0 w-[3px]",
-                            isCovered && !isStart ? "opacity-60" : "",
-                          )}
-                          style={{ backgroundColor: barColor }}
-                        />
-                      )}
-
-                      {/* Top cap for start cells (rounded top) */}
-                      {isStart && barColor && (
-                        <div
-                          className="absolute left-0 top-0 w-[3px] h-1.5 rounded-t"
-                          style={{ backgroundColor: barColor }}
-                        />
-                      )}
-
-                      {/* Cell content */}
-                      {ability ? (
-                        <div className="flex items-center justify-center gap-1 pl-1">
-                          {ability.iconUrl && (
-                            <img
-                              src={ability.iconUrl}
-                              alt={ability.name}
-                              className="h-5 w-5 object-contain shrink-0"
-                            />
-                          )}
-                          <span
-                            className={cn(
-                              "inline-block w-2 h-2 rounded-full shrink-0",
-                              categoryColors[ability.category] ?? "bg-gray-500",
-                            )}
-                          />
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <span className="text-xs truncate max-w-[50px] block">
-                                {ability.name}
-                              </span>
-                            </TooltipTrigger>
-                            {cellIssues.length > 0 && (
-                              <TooltipContent>
-                                {cellIssues.map((issue, j) => (
-                                  <p key={j} className="text-xs max-w-[200px]">
-                                    {issue.message}
-                                  </p>
-                                ))}
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onRemove(char.id, i);
-                            }}
-                            className="text-muted-foreground hover:text-foreground shrink-0"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ) : isCovered ? (
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className="flex items-center justify-center h-full min-h-[32px] pl-1">
-                              <div
-                                className="h-2.5 w-2.5 rounded-full opacity-40"
-                                style={{ backgroundColor: barColor ?? "#9ca3af" }}
-                              />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">
-                              {coverage.ability.name} — placed at{" "}
-                              {timestamps[coverage.startIndex]?.label ??
-                                `row ${coverage.startIndex + 1}`}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/60 italic pl-1">+</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <Box
+      style={{
+        overflowX: "auto",
+        borderRadius: "var(--mantine-radius-md)",
+        border: "1px solid var(--mantine-color-gray-3)",
+      }}
+    >
+      <Table striped withTableBorder={false}>
+        {headers}
+        {body}
+      </Table>
 
       <AbilitySelectorDialog
-        open={selectedCell !== null}
-        onOpenChange={() => setSelectedCell(null)}
+        opened={selectedCell !== null}
+        onClose={() => setSelectedCell(null)}
         character={
           selectedCell ? (characters.find((c) => c.id === selectedCell.charId) ?? null) : null
         }
@@ -383,18 +443,18 @@ export function TimelineGrid({
           }
         }}
       />
-    </TooltipProvider>
+    </Box>
   );
 }
 
 function AbilitySelectorDialog({
-  open,
-  onOpenChange,
+  opened,
+  onClose,
   character,
   onSelect,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  opened: boolean;
+  onClose: () => void;
   character: Character | null;
   onSelect: (abilityId: string) => void;
 }) {
@@ -410,87 +470,86 @@ function AbilitySelectorDialog({
     );
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) setSearch("");
-        onOpenChange(v);
+    <Modal
+      opened={opened}
+      onClose={() => {
+        setSearch("");
+        onClose();
       }}
+      title={`${character.label} (${character.jobName})`}
+      size="lg"
+      styles={{ body: { maxHeight: "70vh", display: "flex", flexDirection: "column" } }}
     >
-      <DialogContent className="max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>
-            {character.label} ({character.jobName})
-          </DialogTitle>
-        </DialogHeader>
+      <TextInput
+        placeholder="Search abilities..."
+        leftSection={<Search size={16} />}
+        value={search}
+        onChange={(e) => setSearch(e.currentTarget.value)}
+        mb="md"
+      />
 
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search abilities..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-md border border-input bg-background pl-8 pr-3 py-2 text-sm"
-          />
-        </div>
+      <Tabs defaultValue={categories[0]} flex={1}>
+        <Tabs.List style={{ flexWrap: "wrap" }}>
+          {categories.map((cat) => (
+            <Tabs.Tab key={cat} value={cat}>
+              {cat.charAt(0) + cat.slice(1).toLowerCase()}
+              {!search && (
+                <Text component="span" size="xs" c="dimmed" ml={4}>
+                  ({character.abilities.filter((a) => a.category === cat).length})
+                </Text>
+              )}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
 
-        <Tabs defaultValue={categories[0]} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="flex flex-wrap h-auto shrink-0">
-            {categories.map((cat) => {
-              const count = filtered(cat).length;
-              return (
-                <TabsTrigger key={cat} value={cat} className="text-xs">
-                  {cat.charAt(0) + cat.slice(1).toLowerCase()}
-                  {!search && (
-                    <span className="ml-1 text-muted-foreground">
-                      ({character.abilities.filter((a) => a.category === cat).length})
-                    </span>
-                  )}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          <div className="flex-1 overflow-y-auto min-h-0">
-            {categories.map((cat) => (
-              <TabsContent key={cat} value={cat} className="space-y-1">
-                {filtered(cat).length === 0 ? (
-                  <p className="text-sm text-muted-foreground px-3 py-4 text-center">
-                    No abilities match your search.
-                  </p>
-                ) : (
-                  filtered(cat).map((ability) => (
-                    <button
+        <ScrollArea.Autosize mah={400} mt="md">
+          {categories.map((cat) => (
+            <Tabs.Panel key={cat} value={cat}>
+              {filtered(cat).length === 0 ? (
+                <Text size="sm" c="dimmed" ta="center" py="xl">
+                  No abilities match your search.
+                </Text>
+              ) : (
+                <Stack gap={2}>
+                  {filtered(cat).map((ability) => (
+                    <Box
                       key={ability.id}
+                      p="xs"
+                      style={{ borderRadius: "var(--mantine-radius-sm)", cursor: "pointer" }}
                       onClick={() => {
                         onSelect(ability.id);
                         setSearch("");
                       }}
-                      className="w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors text-sm"
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "var(--mantine-color-gray-1)")
+                      }
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
-                      <div className="flex items-center gap-2 font-medium">
+                      <Group gap="sm">
                         {ability.iconUrl && (
-                          <img
+                          <Image
                             src={ability.iconUrl}
                             alt={ability.name}
-                            className="h-6 w-6 object-contain shrink-0"
+                            h={24}
+                            w={24}
+                            fit="contain"
                           />
                         )}
-                        <span>{ability.name}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground ml-8">
+                        <Text fw={500}>{ability.name}</Text>
+                      </Group>
+                      <Text size="xs" c="dimmed" ml={32}>
                         CD: {ability.cooldown}s
                         {ability.duration ? ` | Dur: ${ability.duration}s` : ""}
                         {ability.sharedSlot ? ` | Slot: ${ability.sharedSlot}` : ""}
-                      </div>
-                    </button>
-                  ))
-                )}
-              </TabsContent>
-            ))}
-          </div>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+                      </Text>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Tabs.Panel>
+          ))}
+        </ScrollArea.Autosize>
+      </Tabs>
+    </Modal>
   );
 }

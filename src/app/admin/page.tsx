@@ -1,18 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
+import { Card, Stack, Text, Title, SimpleGrid } from "@mantine/core";
+import { BarChart } from "@mantine/charts";
 
 type Stats = {
   totalPlans: number;
@@ -45,7 +35,7 @@ export default function AdminPage() {
   }, []);
 
   if (!stats) {
-    return <div className="text-muted-foreground">Loading stats...</div>;
+    return <Text c="dimmed">Loading stats...</Text>;
   }
 
   const fightChartData = stats.plansPerFight.map((pf) => ({
@@ -54,60 +44,69 @@ export default function AdminPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <Stack gap="xl">
+      <Title order={1}>Dashboard</Title>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Total Plans</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.totalPlans}</p>
-          </CardContent>
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
+        <Card withBorder>
+          <Stack gap="xs">
+            <Text size="sm" c="dimmed">
+              Total Plans
+            </Text>
+            <Text size="xl" fw={700}>
+              {stats.totalPlans}
+            </Text>
+          </Stack>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.totalUsers}</p>
-          </CardContent>
+        <Card withBorder>
+          <Stack gap="xs">
+            <Text size="sm" c="dimmed">
+              Total Users
+            </Text>
+            <Text size="xl" fw={700}>
+              {stats.totalUsers}
+            </Text>
+          </Stack>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Anonymous Plans</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.anonymousPlans}</p>
-          </CardContent>
+        <Card withBorder>
+          <Stack gap="xs">
+            <Text size="sm" c="dimmed">
+              Anonymous Plans
+            </Text>
+            <Text size="xl" fw={700}>
+              {stats.anonymousPlans}
+            </Text>
+          </Stack>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Plans Today</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.plansToday}</p>
-          </CardContent>
+        <Card withBorder>
+          <Stack gap="xs">
+            <Text size="sm" c="dimmed">
+              Plans Today
+            </Text>
+            <Text size="xl" fw={700}>
+              {stats.plansToday}
+            </Text>
+          </Stack>
         </Card>
-      </div>
+      </SimpleGrid>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Plans per Fight</CardTitle>
-        </CardHeader>
-        <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={fightChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="plans" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
+      <Card withBorder>
+        <Card.Section withBorder inheritPadding py="xs">
+          <Title order={3} size="h4">
+            Plans per Fight
+          </Title>
+        </Card.Section>
+        <Card.Section p="md" style={{ height: 288 }}>
+          <BarChart
+            data={fightChartData}
+            dataKey="name"
+            series={[{ name: "plans", color: "blue.6" }]}
+            gridAxis="xy"
+            withLegend={false}
+            h={240}
+          />
+        </Card.Section>
       </Card>
-    </div>
+    </Stack>
   );
 }

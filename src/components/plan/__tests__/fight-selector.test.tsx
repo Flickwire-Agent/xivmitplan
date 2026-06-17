@@ -1,8 +1,15 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MantineProvider } from "@mantine/core";
 import { FightSelector } from "@/components/plan/fight-selector";
 import type { TimestampEntry } from "@/types";
+
+function renderWithMantine(ui: React.ReactElement) {
+  return render(ui, {
+    wrapper: ({ children }) => <MantineProvider>{children}</MantineProvider>,
+  });
+}
 
 function makeFight(id: string, name: string, patch: string, tier: string) {
   return {
@@ -26,15 +33,16 @@ const fights = [
 describe("FightSelector", () => {
   it("renders with placeholder when no fight selected", () => {
     const onSelect = vi.fn();
-    render(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
+    renderWithMantine(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
 
     expect(screen.getByText("Select Encounter")).toBeTruthy();
-    expect(screen.getByText("Choose a fight...")).toBeTruthy();
+    const input = screen.getByRole("combobox");
+    expect(input).toHaveAttribute("placeholder", "Choose a fight...");
   });
 
   it("shows selected fight metadata", () => {
     const onSelect = vi.fn();
-    render(<FightSelector fights={fights} selected={fights[0]} onSelect={onSelect} />);
+    renderWithMantine(<FightSelector fights={fights} selected={fights[0]} onSelect={onSelect} />);
 
     expect(screen.getByText(/AAC Light-heavyweight/)).toBeTruthy();
     expect(screen.getByText(/1 mechanics/)).toBeTruthy();
@@ -43,7 +51,7 @@ describe("FightSelector", () => {
   it("calls onSelect when a fight is chosen", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
-    render(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
+    renderWithMantine(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
 
     const trigger = screen.getByRole("combobox");
     await user.click(trigger);
@@ -59,7 +67,7 @@ describe("FightSelector", () => {
   it("renders all fights in the dropdown", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
-    render(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
+    renderWithMantine(<FightSelector fights={fights} selected={null} onSelect={onSelect} />);
 
     const trigger = screen.getByRole("combobox");
     await user.click(trigger);

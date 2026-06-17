@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Group, Title, Container, Stack, SimpleGrid } from "@mantine/core";
 import { FightSelector } from "@/components/plan/fight-selector";
 import { PartyRoster } from "@/components/plan/party-roster";
 import { TimelineGrid } from "@/components/plan/timeline-grid";
@@ -289,47 +288,49 @@ export default function NewPlanPage() {
   const timestamps = selectedFight?.timestamps ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Create Mitigation Plan</h1>
-        <div className="flex gap-2">
+    <Container size="xl" py="lg">
+      <Stack gap="xl">
+        <Group justify="space-between">
+          <Title order={1}>Create Mitigation Plan</Title>
           <Button onClick={savePlan} disabled={saving || !selectedFight}>
             {saving ? "Saving..." : "Save Plan"}
           </Button>
-        </div>
-      </div>
+        </Group>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <FightSelector fights={fights} selected={selectedFight} onSelect={setSelectedFight} />
+        <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl">
+          <Stack gap="xl" style={{ gridColumn: "span 2" }}>
+            <FightSelector fights={fights} selected={selectedFight} onSelect={setSelectedFight} />
 
-          {selectedFight && (
-            <>
-              <PartyRoster
-                characters={characters}
-                onAdd={addCharacter}
-                onRemove={removeCharacter}
-                onChangeJob={updateCharacterJob}
-              />
-
-              {characters.length > 0 && (
-                <TimelineGrid
+            {selectedFight && (
+              <>
+                <PartyRoster
                   characters={characters}
-                  timestamps={timestamps}
-                  validation={validation}
-                  onAssign={assignAbility}
-                  onRemove={removeAbility}
-                  onMoveAbility={moveAbility}
+                  onAdd={addCharacter}
+                  onRemove={removeCharacter}
+                  onChangeJob={updateCharacterJob}
                 />
-              )}
-            </>
-          )}
-        </div>
 
-        <div className="space-y-6">
-          {validation.length > 0 && <ValidationPanel issues={validation} timestamps={timestamps} />}
-        </div>
-      </div>
-    </div>
+                {characters.length > 0 && (
+                  <TimelineGrid
+                    characters={characters}
+                    timestamps={timestamps}
+                    validation={validation}
+                    onAssign={assignAbility}
+                    onRemove={removeAbility}
+                    onMoveAbility={moveAbility}
+                  />
+                )}
+              </>
+            )}
+          </Stack>
+
+          <Stack gap="xl">
+            {validation.length > 0 && (
+              <ValidationPanel issues={validation} timestamps={timestamps} />
+            )}
+          </Stack>
+        </SimpleGrid>
+      </Stack>
+    </Container>
   );
 }

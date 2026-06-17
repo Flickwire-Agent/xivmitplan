@@ -9,9 +9,9 @@ A web application for **Final Fantasy XIV** raid parties to plan mitigation and 
 | Framework | Next.js 16 (App Router, TypeScript)              |
 | Auth      | Auth0 (`@auth0/nextjs-auth0` v4)                 |
 | Database  | Prisma ORM v7 + SQLite (dev) / PostgreSQL (prod) |
-| UI        | Tailwind CSS v4 + shadcn/ui                      |
+| UI        | Mantine v9                                       |
 | Icons     | lucide-react                                     |
-| Charts    | recharts                                         |
+| Charts    | Mantine Charts                                   |
 | State     | React hooks + URL params                         |
 | Hosting   | pm2 (local)                                      |
 
@@ -87,14 +87,16 @@ src/
 │   │   └── fights/           # Fight catalogue editor
 │   └── api/                  # 16 API route handlers
 ├── components/
-│   ├── ui/                   # shadcn/ui primitives
 │   ├── plan/                 # Plan editor components
+│   ├── admin-shell.tsx       # Admin Mantine shell
+│   ├── root-shell.tsx        # Root Mantine shell
+│   ├── providers.tsx         # Mantine providers
 │   └── navbar.tsx
 ├── lib/
 │   ├── auth0.ts              # Auth0 client
 │   ├── prisma.ts             # Prisma singleton
 │   ├── cooldown-validator.ts # Validation engine
-│   └── utils.ts              # Helpers (cn, formatTime, etc.)
+│   └── utils.ts              # Helpers (formatTime, debounce, etc.)
 └── types/index.ts            # Shared TypeScript types
 ```
 
@@ -105,7 +107,7 @@ src/
 - **Timeline Grid** — Assign job-appropriate abilities to mechanic timestamps
 - **Cooldown Validation** — Real-time detection of double-tap violations, shared-slot collisions, and missing assignments
 - **Share & Fork** — Generate a share link; viewers can fork plans into their own copy
-- **Admin Panel** — Usage statistics (recharts), user moderation, fight catalogue management
+- **Admin Panel** — Usage statistics, user moderation, fight catalogue management
 
 ## Deployment
 

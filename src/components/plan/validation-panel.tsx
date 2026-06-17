@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/utils";
+import { Text, Group, Stack, Alert } from "@mantine/core";
 import { AlertTriangle, XCircle, Info } from "lucide-react";
+import { formatTime } from "@/lib/utils";
 import type { ValidationIssue, TimestampEntry } from "@/types";
 
 interface ValidationPanelProps {
@@ -21,52 +21,47 @@ export function ValidationPanel({ issues, timestamps }: ValidationPanelProps) {
 
   if (issues.length === 0) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+      <Alert color="green" title="Validation" radius="md">
         No validation issues found.
-      </div>
+      </Alert>
     );
   }
 
   return (
-    <div className="rounded-lg border p-4 space-y-3">
-      <h3 className="font-semibold text-sm flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-        Validation ({issues.length})
-      </h3>
+    <Stack gap="md">
+      <Group>
+        <AlertTriangle size={16} />
+        <Text fw={600} size="sm">
+          Validation ({issues.length})
+        </Text>
+      </Group>
       {Object.entries(grouped).map(([tsIndexStr, groupIssues]) => {
         const tsIndex = parseInt(tsIndexStr);
         const ts = timestamps[tsIndex];
         return (
-          <div key={tsIndex} className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
+          <Stack key={tsIndex} gap={4}>
+            <Text size="xs" fw={500} c="dimmed">
               {formatTime(ts?.time ?? 0)} - {ts?.label ?? "Unknown"}
-            </p>
+            </Text>
             {groupIssues.map((issue, i) => (
-              <div
+              <Alert
                 key={i}
-                className={cn(
-                  "flex items-start gap-2 rounded-md p-2 text-xs",
-                  issue.severity === "ERROR"
-                    ? "bg-red-50 text-red-700"
-                    : "bg-yellow-50 text-yellow-700",
-                )}
+                icon={issue.severity === "ERROR" ? <XCircle size={14} /> : <Info size={14} />}
+                color={issue.severity === "ERROR" ? "red" : "yellow"}
+                radius="md"
+                styles={{ body: { padding: "8px 12px" } }}
               >
-                {issue.severity === "ERROR" ? (
-                  <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
-                ) : (
-                  <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                )}
-                <div>
-                  <p className="font-medium">
+                <Stack gap={2}>
+                  <Text size="xs" fw={500}>
                     {issue.character?.label ?? "Unknown"} - {issue.ability?.name ?? ""}
-                  </p>
-                  <p>{issue.message}</p>
-                </div>
-              </div>
+                  </Text>
+                  <Text size="xs">{issue.message}</Text>
+                </Stack>
+              </Alert>
             ))}
-          </div>
+          </Stack>
         );
       })}
-    </div>
+    </Stack>
   );
 }

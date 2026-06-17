@@ -1,7 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { MantineProvider } from "@mantine/core";
 import { ValidationPanel } from "@/components/plan/validation-panel";
 import type { ValidationIssue, TimestampEntry } from "@/types";
+
+function renderWithMantine(ui: React.ReactElement) {
+  return render(ui, {
+    wrapper: ({ children }) => <MantineProvider>{children}</MantineProvider>,
+  });
+}
 
 const timestamps: TimestampEntry[] = [
   { time: 0, label: "Pull", type: "OTHER" },
@@ -11,7 +18,7 @@ const timestamps: TimestampEntry[] = [
 
 describe("ValidationPanel", () => {
   it("shows empty state when no issues", () => {
-    render(<ValidationPanel issues={[]} timestamps={timestamps} />);
+    renderWithMantine(<ValidationPanel issues={[]} timestamps={timestamps} />);
     expect(screen.getByText("No validation issues found.")).toBeTruthy();
   });
 
@@ -28,7 +35,7 @@ describe("ValidationPanel", () => {
         ability: { id: "Rampart", name: "Rampart" },
       },
     ];
-    render(<ValidationPanel issues={issues} timestamps={timestamps} />);
+    renderWithMantine(<ValidationPanel issues={issues} timestamps={timestamps} />);
     expect(screen.getByText("Rampart is on cooldown")).toBeTruthy();
   });
 
@@ -44,7 +51,7 @@ describe("ValidationPanel", () => {
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
     ];
-    render(<ValidationPanel issues={issues} timestamps={timestamps} />);
+    renderWithMantine(<ValidationPanel issues={issues} timestamps={timestamps} />);
     expect(screen.getByText("No ability assigned for Paladin")).toBeTruthy();
   });
 
@@ -69,7 +76,7 @@ describe("ValidationPanel", () => {
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
     ];
-    render(<ValidationPanel issues={issues} timestamps={timestamps} />);
+    renderWithMantine(<ValidationPanel issues={issues} timestamps={timestamps} />);
     expect(screen.getByText("Missing at Raid Damage")).toBeTruthy();
     expect(screen.getByText("Missing at Tank Damage")).toBeTruthy();
     expect(screen.getAllByText((c) => c.includes("Raid Damage"))).toHaveLength(2);
@@ -99,7 +106,7 @@ describe("ValidationPanel", () => {
         character: { id: "pld", label: "Paladin", job: "Paladin" },
       },
     ];
-    render(<ValidationPanel issues={issues} timestamps={timestamps} />);
+    renderWithMantine(<ValidationPanel issues={issues} timestamps={timestamps} />);
     expect(screen.getByText((c) => c.includes("2"))).toBeTruthy();
   });
 });

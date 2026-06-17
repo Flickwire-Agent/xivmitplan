@@ -1,60 +1,75 @@
+"use client";
+
 import Link from "next/link";
 import { Shield, Sword, Users, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Text, Card, Group, Stack, SimpleGrid, Title, Container } from "@mantine/core";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center">
-      <section className="flex flex-col items-center gap-6 py-24 px-4 text-center">
-        <Shield className="h-12 w-12 text-primary" />
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">FFXIV Mitigation Planner</h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+    <Container size="xl" py="xl">
+      <Stack align="center" gap="xl" py="xl">
+        <Shield size={48} />
+        <Title order={1} ta="center">
+          FFXIV Mitigation Planner
+        </Title>
+        <Text size="lg" c="dimmed" maw={600} ta="center">
           Plan and optimize your raid party&apos;s mitigation and healing cooldowns across any
           encounter. Assign abilities, validate cooldowns, and share plans with your static.
-        </p>
-        <div className="flex gap-4">
-          <Button size="lg" render={<Link href="/plan/new" />}>
+        </Text>
+        <Group>
+          <Button size="md" component={Link} href="/plan/new">
             Create a Plan
           </Button>
-          <Button size="lg" variant="outline" render={<Link href="/plan" />}>
+          <Button size="md" variant="outline" component={Link} href="/plan">
             Browse Plans
           </Button>
-        </div>
-      </section>
+        </Group>
+      </Stack>
 
-      <section className="grid grid-cols-1 gap-6 w-full max-w-4xl px-4 pb-24 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <Sword className="h-8 w-8 text-primary mb-2" />
-            <CardTitle className="text-lg">Job Abilities</CardTitle>
-            <CardDescription>
-              All 21 jobs with their role-appropriate mitigation, shielding, healing, and personal
-              cooldowns.
-            </CardDescription>
-          </CardHeader>
+      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg" mt="xl">
+        <Card withBorder>
+          <Card.Section p="md">
+            <Stack gap="md">
+              <Sword size={32} />
+              <Title order={3} size="h4">
+                Job Abilities
+              </Title>
+              <Text c="dimmed" size="sm">
+                All 21 jobs with their role-appropriate mitigation, shielding, healing, and personal
+                cooldowns.
+              </Text>
+            </Stack>
+          </Card.Section>
         </Card>
-        <Card>
-          <CardHeader>
-            <Clock className="h-8 w-8 text-primary mb-2" />
-            <CardTitle className="text-lg">Cooldown Validation</CardTitle>
-            <CardDescription>
-              Real-time validation catches double-taps, shared slot collisions, and missing
-              assignments.
-            </CardDescription>
-          </CardHeader>
+        <Card withBorder>
+          <Card.Section p="md">
+            <Stack gap="md">
+              <Clock size={32} />
+              <Title order={3} size="h4">
+                Cooldown Validation
+              </Title>
+              <Text c="dimmed" size="sm">
+                Real-time validation catches double-taps, shared slot collisions, and missing
+                assignments.
+              </Text>
+            </Stack>
+          </Card.Section>
         </Card>
-        <Card>
-          <CardHeader>
-            <Users className="h-8 w-8 text-primary mb-2" />
-            <CardTitle className="text-lg">Share & Fork</CardTitle>
-            <CardDescription>
-              Share read-only plans with your party or fork existing plans to create your own
-              version.
-            </CardDescription>
-          </CardHeader>
+        <Card withBorder>
+          <Card.Section p="md">
+            <Stack gap="md">
+              <Users size={32} />
+              <Title order={3} size="h4">
+                Share & Fork
+              </Title>
+              <Text c="dimmed" size="sm">
+                Share read-only plans with your party or fork existing plans to create your own
+                version.
+              </Text>
+            </Stack>
+          </Card.Section>
         </Card>
-      </section>
-    </div>
+      </SimpleGrid>
+    </Container>
   );
 }

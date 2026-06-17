@@ -3,30 +3,39 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatTime } from "@/lib/utils";
+import {
+  Button,
+  Card,
+  Group,
+  Stack,
+  Badge,
+  Text,
+  Title,
+  Container,
+  Table,
+  Box,
+} from "@mantine/core";
 import { Shield, Copy } from "lucide-react";
+import { formatTime } from "@/lib/utils";
 import type { PlanWithRelations, TimestampEntry } from "@/types";
 
 const categoryColors: Record<string, string> = {
-  MITIGATION: "bg-blue-500",
-  HEALING: "bg-green-500",
-  SHIELD: "bg-yellow-500",
-  INVULN: "bg-red-500",
-  PERSONAL: "bg-gray-500",
+  MITIGATION: "blue",
+  HEALING: "green",
+  SHIELD: "yellow",
+  INVULN: "red",
+  PERSONAL: "gray",
 };
 
 const eventTypeColors: Record<string, string> = {
-  RAID_DAMAGE: "bg-red-100 text-red-800 border-red-300",
-  TANK_DAMAGE: "bg-orange-100 text-orange-800 border-orange-300",
-  POSITIONING_REQUIRED: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  AVOIDABLE_AOE: "bg-green-100 text-green-800 border-green-300",
-  DEBUFFS: "bg-cyan-100 text-cyan-800 border-cyan-300",
-  TARGETED_AOE: "bg-sky-100 text-sky-800 border-sky-300",
-  MECHANICS: "bg-violet-100 text-violet-800 border-violet-300",
-  OTHER: "bg-zinc-100 text-zinc-800 border-zinc-300",
+  RAID_DAMAGE: "red",
+  TANK_DAMAGE: "orange",
+  POSITIONING_REQUIRED: "yellow",
+  AVOIDABLE_AOE: "green",
+  DEBUFFS: "cyan",
+  TARGETED_AOE: "sky",
+  MECHANICS: "violet",
+  OTHER: "gray",
 };
 
 export default function SharedPlanPage() {
@@ -57,19 +66,25 @@ export default function SharedPlanPage() {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-muted-foreground">Loading plan...</div>;
+    return (
+      <Text ta="center" c="dimmed" py="xl">
+        Loading plan...
+      </Text>
+    );
   }
 
   if (!plan) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 p-12">
-        <Shield className="h-12 w-12 text-muted-foreground" />
-        <h1 className="text-2xl font-bold">Plan Not Found</h1>
-        <p className="text-muted-foreground">
-          This share link may have expired or the plan was deleted.
-        </p>
-        <Button render={<Link href="/plan/new" />}>Create Your Own Plan</Button>
-      </div>
+      <Container size="xl" py="xl">
+        <Stack align="center" gap="lg">
+          <Shield size={48} />
+          <Title order={1}>Plan Not Found</Title>
+          <Text c="dimmed">This share link may have expired or the plan was deleted.</Text>
+          <Button component={Link} href="/plan/new">
+            Create Your Own Plan
+          </Button>
+        </Stack>
+      </Container>
     );
   }
 
@@ -77,100 +92,131 @@ export default function SharedPlanPage() {
   const characters = plan.characters.sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{plan.title ?? "Shared Plan"}</h1>
-          <p className="text-sm text-muted-foreground">
-            {plan.fight.name} &middot; {plan.fight.tier}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={copyLink}>
-            <Copy className="h-4 w-4 mr-1" />
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
-          <Button size="sm" render={<Link href={`/plan/${plan.id}`} />}>
-            Fork this Plan
-          </Button>
-        </div>
-      </div>
+    <Container size="xl" py="lg">
+      <Stack gap="xl">
+        <Group justify="space-between">
+          <Stack gap={2}>
+            <Title order={1}>{plan.title ?? "Shared Plan"}</Title>
+            <Text size="sm" c="dimmed">
+              {plan.fight.name} &middot; {plan.fight.tier}
+            </Text>
+          </Stack>
+          <Group>
+            <Button variant="outline" size="xs" onClick={copyLink}>
+              <Copy size={14} style={{ marginRight: 4 }} />
+              {copied ? "Copied!" : "Copy Link"}
+            </Button>
+            <Button size="xs" component={Link} href={`/plan/${plan.id}`}>
+              Fork this Plan
+            </Button>
+          </Group>
+        </Group>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Party</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {characters.map((char) => (
-              <Badge key={char.id} variant="secondary">
-                {char.label ?? char.job.name} ({char.job.id})
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="sticky left-0 z-10 bg-muted/50 px-3 py-2 text-left font-medium min-w-[140px]">
-                Character
-              </th>
-              {timestamps.map((ts, i) => (
-                <th key={i} className="px-2 py-2 text-center font-medium min-w-[100px]">
-                  <div className="text-xs text-muted-foreground">{formatTime(ts.time)}</div>
-                  <div className="text-xs leading-tight">{ts.label}</div>
-                  <Badge
-                    variant="outline"
-                    className={`mt-1 text-[10px] px-1 py-0 ${eventTypeColors[ts.type] ?? eventTypeColors.OTHER}`}
-                  >
-                    {ts.type}
-                  </Badge>
-                </th>
+        <Card withBorder>
+          <Card.Section withBorder inheritPadding py="xs">
+            <Title order={3} size="h4">
+              Party
+            </Title>
+          </Card.Section>
+          <Card.Section inheritPadding py="md">
+            <Group wrap="wrap">
+              {characters.map((char) => (
+                <Badge key={char.id} variant="light">
+                  {char.label ?? char.job.name} ({char.job.id})
+                </Badge>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {characters.map((char) => (
-              <tr key={char.id} className="border-b last:border-0">
-                <td className="sticky left-0 z-10 bg-background px-3 py-2 font-medium">
-                  <div className="flex flex-col">
-                    <span>{char.label ?? char.job.name}</span>
-                    <span className="text-xs text-muted-foreground">{char.job.name}</span>
-                  </div>
-                </td>
-                {timestamps.map((_ts, i) => {
-                  const event = char.events.find((e) => e.timestampIndex === i);
-                  const ability = event
-                    ? char.job.abilities.find((a) => a.id === event.abilityId)
-                    : null;
-                  return (
-                    <td
-                      key={i}
-                      className={`px-2 py-2 text-center border-l ${
-                        ability ? "bg-green-50" : "bg-gray-50"
-                      }`}
-                    >
-                      {ability && (
-                        <span className="flex items-center justify-center gap-1">
-                          <span
-                            className={`inline-block w-2 h-2 rounded-full ${
-                              categoryColors[ability.category] ?? "bg-gray-500"
-                            }`}
-                          />
-                          <span className="text-xs">{ability.name}</span>
-                        </span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </Group>
+          </Card.Section>
+        </Card>
+
+        <div
+          style={{
+            overflowX: "auto",
+            borderRadius: "var(--mantine-radius-md)",
+            border: "1px solid var(--mantine-color-gray-3)",
+          }}
+        >
+          <Table striped>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ position: "sticky", left: 0, zIndex: 10, minWidth: 140 }}>
+                  Character
+                </Table.Th>
+                {timestamps.map((ts, i) => (
+                  <Table.Th key={i} style={{ textAlign: "center", minWidth: 100 }}>
+                    <Stack gap={2}>
+                      <Text size="xs" c="dimmed">
+                        {formatTime(ts.time)}
+                      </Text>
+                      <Text size="xs">{ts.label}</Text>
+                      <Badge
+                        size="xs"
+                        variant="outline"
+                        color={eventTypeColors[ts.type] ?? eventTypeColors.OTHER}
+                      >
+                        {ts.type}
+                      </Badge>
+                    </Stack>
+                  </Table.Th>
+                ))}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {characters.map((char) => (
+                <Table.Tr key={char.id}>
+                  <Table.Td
+                    style={{
+                      position: "sticky",
+                      left: 0,
+                      zIndex: 10,
+                      background: "var(--mantine-color-body)",
+                    }}
+                  >
+                    <Stack gap={0}>
+                      <Text fw={500}>{char.label ?? char.job.name}</Text>
+                      <Text size="xs" c="dimmed">
+                        {char.job.name}
+                      </Text>
+                    </Stack>
+                  </Table.Td>
+                  {timestamps.map((_ts, i) => {
+                    const event = char.events.find((e) => e.timestampIndex === i);
+                    const ability = event
+                      ? char.job.abilities.find((a) => a.id === event.abilityId)
+                      : null;
+                    return (
+                      <Table.Td
+                        key={i}
+                        style={{
+                          textAlign: "center",
+                          background: ability
+                            ? "var(--mantine-color-green-0)"
+                            : "var(--mantine-color-gray-0)",
+                        }}
+                      >
+                        {ability && (
+                          <Group justify="center" gap={4}>
+                            <Box
+                              style={{
+                                display: "inline-block",
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                backgroundColor: categoryColors[ability.category] ?? "#9ca3af",
+                              }}
+                            />
+                            <Text size="xs">{ability.name}</Text>
+                          </Group>
+                        )}
+                      </Table.Td>
+                    );
+                  })}
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </div>
+      </Stack>
+    </Container>
   );
 }

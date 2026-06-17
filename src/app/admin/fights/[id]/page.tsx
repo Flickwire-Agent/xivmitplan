@@ -2,8 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Button,
+  Card,
+  Group,
+  Stack,
+  Title,
+  TextInput,
+  Select,
+  NumberInput,
+  ActionIcon,
+  Text,
+} from "@mantine/core";
 import { Trash2, Plus } from "lucide-react";
 
 type Fight = {
@@ -75,72 +85,69 @@ export default function EditFightPage() {
     router.push("/admin");
   };
 
-  if (!fight) return <div className="text-muted-foreground">Loading...</div>;
+  if (!fight) return <Text c="dimmed">Loading...</Text>;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Edit Fight: {fight.name}</h1>
+    <Stack gap="xl" maw={800}>
+      <Title order={1}>Edit Fight: {fight.name}</Title>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Timestamps</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Button onClick={addTimestamp} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-1" /> Add
-          </Button>
-          {timestamps.map((ts, i) => (
-            <div key={i} className="flex gap-2 items-center mt-2">
-              <input
-                type="number"
-                className="w-20 rounded-md border px-2 py-1.5 text-sm"
-                value={ts.time}
-                onChange={(e) => updateTimestamp(i, "time", parseInt(e.target.value) || 0)}
-              />
-              <input
-                className="flex-1 rounded-md border px-2 py-1.5 text-sm"
-                value={ts.label}
-                onChange={(e) => updateTimestamp(i, "label", e.target.value)}
-              />
-              <select
-                className="rounded-md border px-2 py-1.5 text-sm"
-                value={ts.type}
-                onChange={(e) => updateTimestamp(i, "type", e.target.value)}
-              >
-                {[
-                  "RAID_DAMAGE",
-                  "TANK_DAMAGE",
-                  "POSITIONING_REQUIRED",
-                  "AVOIDABLE_AOE",
-                  "DEBUFFS",
-                  "TARGETED_AOE",
-                  "MECHANICS",
-                  "OTHER",
-                ].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => removeTimestamp(i)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </CardContent>
+      <Card withBorder>
+        <Card.Section withBorder inheritPadding py="xs">
+          <Group justify="space-between">
+            <Title order={3} size="h4">
+              Timestamps
+            </Title>
+            <Button onClick={addTimestamp} size="xs" variant="outline">
+              <Plus size={14} style={{ marginRight: 4 }} /> Add
+            </Button>
+          </Group>
+        </Card.Section>
+        <Card.Section inheritPadding py="md">
+          <Stack gap="xs">
+            {timestamps.map((ts, i) => (
+              <Group key={i} gap="xs">
+                <NumberInput
+                  w={100}
+                  value={ts.time}
+                  onChange={(v) => updateTimestamp(i, "time", typeof v === "number" ? v : 0)}
+                />
+                <TextInput
+                  flex={1}
+                  value={ts.label}
+                  onChange={(e) => updateTimestamp(i, "label", e.currentTarget.value)}
+                />
+                <Select
+                  w={180}
+                  value={ts.type}
+                  onChange={(v) => v && updateTimestamp(i, "type", v)}
+                  data={[
+                    "RAID_DAMAGE",
+                    "TANK_DAMAGE",
+                    "POSITIONING_REQUIRED",
+                    "AVOIDABLE_AOE",
+                    "DEBUFFS",
+                    "TARGETED_AOE",
+                    "MECHANICS",
+                    "OTHER",
+                  ]}
+                />
+                <ActionIcon variant="subtle" color="red" onClick={() => removeTimestamp(i)}>
+                  <Trash2 size={16} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Stack>
+        </Card.Section>
       </Card>
 
-      <div className="flex gap-2">
+      <Group>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
-        <Button variant="destructive" onClick={handleDelete}>
+        <Button color="red" onClick={handleDelete}>
           Delete Fight
         </Button>
-      </div>
-    </div>
+      </Group>
+    </Stack>
   );
 }

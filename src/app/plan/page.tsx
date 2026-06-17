@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Button,
+  Card,
+  Group,
+  Text,
+  Stack,
+  SimpleGrid,
+  Title,
+  Container,
+  Skeleton,
+} from "@mantine/core";
 import { Plus } from "lucide-react";
 
 type PlanSummary = {
@@ -17,14 +26,12 @@ type PlanSummary = {
 
 function PlanCardSkeleton() {
   return (
-    <Card className="animate-pulse">
-      <CardHeader>
-        <div className="h-5 bg-muted rounded w-2/3" />
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="h-4 bg-muted rounded w-1/2" />
-        <div className="h-3 bg-muted rounded w-1/3" />
-      </CardContent>
+    <Card withBorder>
+      <Skeleton height={24} width="66%" mb="md" />
+      <Stack gap="xs">
+        <Skeleton height={16} width="50%" />
+        <Skeleton height={12} width="33%" />
+      </Stack>
     </Card>
   );
 }
@@ -44,46 +51,58 @@ export default function PlansPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Plans</h1>
-        <Button render={<Link href="/plan/new" />}>
-          <Plus className="h-4 w-4" /> New Plan
-        </Button>
-      </div>
+    <Container size="xl" py="lg">
+      <Stack gap="xl">
+        <Group justify="space-between">
+          <Title order={1}>Plans</Title>
+          <Button component={Link} href="/plan/new">
+            <Plus size={16} style={{ marginRight: 8 }} /> New Plan
+          </Button>
+        </Group>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <PlanCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : plans.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No plans yet. Create your first one!
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {plans.map((plan) => (
-            <Link key={plan.id} href={`/plan/${plan.id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="text-lg">{plan.title ?? "Untitled Plan"}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{plan.fight.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {plan.characters.length} characters &middot;{" "}
-                    {new Date(plan.createdAt).toLocaleDateString()}
-                  </p>
-                </CardContent>
+        {loading ? (
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+            {[...Array(4)].map((_, i) => (
+              <PlanCardSkeleton key={i} />
+            ))}
+          </SimpleGrid>
+        ) : plans.length === 0 ? (
+          <Card withBorder>
+            <Card.Section p="xl" ta="center" c="dimmed">
+              No plans yet. Create your first one!
+            </Card.Section>
+          </Card>
+        ) : (
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+            {plans.map((plan) => (
+              <Card
+                key={plan.id}
+                withBorder
+                component={Link}
+                href={`/plan/${plan.id}`}
+                style={{ cursor: "pointer" }}
+                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "var(--mantine-shadow-md)")}
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+              >
+                <Card.Section p="md">
+                  <Stack gap="xs">
+                    <Title order={3} size="h4">
+                      {plan.title ?? "Untitled Plan"}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                      {plan.fight.name}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {plan.characters.length} characters &middot;{" "}
+                      {new Date(plan.createdAt).toLocaleDateString()}
+                    </Text>
+                  </Stack>
+                </Card.Section>
               </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </SimpleGrid>
+        )}
+      </Stack>
+    </Container>
   );
 }

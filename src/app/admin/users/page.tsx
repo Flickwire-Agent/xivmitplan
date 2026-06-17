@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Badge, Avatar, Card, Group, Stack, Text, Title, Table } from "@mantine/core";
 
 type AdminUser = {
   id: string;
@@ -52,68 +49,62 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
-  if (loading) return <div className="text-muted-foreground">Loading users...</div>;
+  if (loading) return <Text c="dimmed">Loading users...</Text>;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Users</h1>
+    <Stack gap="xl">
+      <Title order={1}>Users</Title>
 
-      <Card>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left px-4 py-3 font-medium">User</th>
-                <th className="text-left px-4 py-3 font-medium">Email</th>
-                <th className="text-left px-4 py-3 font-medium">Role</th>
-                <th className="text-left px-4 py-3 font-medium">Plans</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-right px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Card withBorder p={0}>
+        <Table.ScrollContainer minWidth={600}>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>User</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>Role</Table.Th>
+                <Table.Th>Plans</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th style={{ textAlign: "right" }}>Actions</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-b last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>
-                          {(user.displayName ?? "?")[0].toUpperCase()}
-                        </AvatarFallback>
+                <Table.Tr key={user.id}>
+                  <Table.Td>
+                    <Group gap="sm">
+                      <Avatar size="sm" radius="xl">
+                        {(user.displayName ?? "?")[0].toUpperCase()}
                       </Avatar>
-                      <span>{user.displayName ?? "Anonymous"}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
-                      {user.role}
+                      <Text>{user.displayName ?? "Anonymous"}</Text>
+                    </Group>
+                  </Table.Td>
+                  <Table.Td c="dimmed">{user.email ?? "—"}</Table.Td>
+                  <Table.Td>
+                    <Badge color={user.role === "ADMIN" ? "blue" : "gray"}>{user.role}</Badge>
+                  </Table.Td>
+                  <Table.Td>{user._count.plans}</Table.Td>
+                  <Table.Td>
+                    <Badge color={user.bannedAt ? "red" : "green"}>
+                      {user.bannedAt ? "Banned" : "Active"}
                     </Badge>
-                  </td>
-                  <td className="px-4 py-3">{user._count.plans}</td>
-                  <td className="px-4 py-3">
-                    {user.bannedAt ? (
-                      <Badge variant="destructive">Banned</Badge>
-                    ) : (
-                      <Badge variant="secondary">Active</Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex gap-1 justify-end">
-                      <Button variant="outline" size="sm" onClick={() => toggleRole(user)}>
+                  </Table.Td>
+                  <Table.Td>
+                    <Group justify="flex-end">
+                      <Button variant="outline" size="xs" onClick={() => toggleRole(user)}>
                         {user.role === "ADMIN" ? "Demote" : "Promote"}
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => toggleBan(user)}>
+                      <Button variant="outline" size="xs" onClick={() => toggleBan(user)}>
                         {user.bannedAt ? "Unban" : "Ban"}
                       </Button>
-                    </div>
-                  </td>
-                </tr>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
               ))}
-            </tbody>
-          </table>
-        </CardContent>
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       </Card>
-    </div>
+    </Stack>
   );
 }

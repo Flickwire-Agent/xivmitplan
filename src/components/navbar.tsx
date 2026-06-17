@@ -41,7 +41,7 @@ export function Navbar() {
           {loading ? null : user ? (
             <>
               <Link
-                href="/api/auth/logout"
+                href="/auth/logout"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Avatar size="sm">
@@ -53,7 +53,7 @@ export function Navbar() {
               </Link>
             </>
           ) : (
-            <Button variant="ghost" size="sm" render={<a href="/api/auth/login" />}>
+            <Button variant="ghost" size="sm" render={<a href="/auth/login" />}>
               Sign In
             </Button>
           )}

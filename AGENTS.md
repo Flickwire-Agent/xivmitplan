@@ -19,6 +19,16 @@ When creating or modifying code in this project, you MUST create git commits wit
 
 <!-- END:git-attribution -->
 
+<!-- BEGIN:git-discipline -->
+
+# Git Discipline
+
+Commit early and often. Don't batch all changes into one commit. Stage
+related changes together, split hunks with `git add -p` when a file contains
+multiple unrelated changes.
+
+<!-- END:git-discipline -->
+
 <!-- BEGIN:test-suite -->
 
 # Test Suite

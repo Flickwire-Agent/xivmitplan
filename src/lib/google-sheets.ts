@@ -101,6 +101,31 @@ export function getCellForeground(cell: CellData | undefined): string | undefine
   return colorToHex(fromTextFormatStyle ?? fromTextFormat);
 }
 
+async function resolveSheetTitle(
+  spreadsheetId: string,
+  gid: number,
+  apiKey: string,
+): Promise<string> {
+  const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`);
+  url.searchParams.set("key", apiKey);
+
+  const response = await fetch(url.toString());
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Google Sheets API error (${response.status}): ${body.slice(0, 500)}`);
+  }
+
+  const metadata = (await response.json()) as Spreadsheet;
+  const sheet = metadata.sheets?.find((s) => s.properties?.sheetId === gid);
+
+  if (!sheet?.properties?.title) {
+    throw new Error(`Sheet with gid ${gid} not found.`);
+  }
+
+  return sheet.properties.title;
+}
+
 /**
  * Fetch a public spreadsheet via the Google Sheets API v4.
  * Requires an API key with access to the Sheets API.
@@ -108,10 +133,17 @@ export function getCellForeground(cell: CellData | undefined): string | undefine
 export async function fetchSpreadsheet(options: FetchSheetOptions): Promise<Spreadsheet> {
   const { spreadsheetId, gid, range, apiKey } = options;
 
-  const ranges = range ? [range] : gid ? [`${gid}`] : undefined;
-
-  if (!ranges) {
+  if (!gid && !range) {
     throw new Error("Either a sheet range or gid must be provided.");
+  }
+
+  const ranges: string[] = [];
+
+  if (range) {
+    ranges.push(range);
+  } else if (gid) {
+    const title = await resolveSheetTitle(spreadsheetId, gid, apiKey);
+    ranges.push(title);
   }
 
   const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`);

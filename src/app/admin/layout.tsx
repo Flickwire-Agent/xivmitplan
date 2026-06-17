@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Shield, BarChart3, Users, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { auth0Server as auth0 } from "@/lib/auth0-server";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Admin - xivmitplan",
@@ -13,7 +16,20 @@ const navItems = [
   { href: "/admin/fights/new", label: "New Fight", icon: Sword },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth0.getSession();
+  if (!session?.user) {
+    redirect("/auth/login");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { auth0Id: session.user.sub },
+  });
+
+  if (!user || user.role !== "ADMIN") {
+    redirect("/");
+  }
+
   return (
     <div className="flex min-h-screen">
       <aside className="w-56 border-r bg-muted/30 p-4 hidden md:block">

@@ -10,12 +10,12 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Git Commit Attribution
 
-When creating or modifying code in this project, you MUST create git commits with proper attribution:
+When creating commits in this project:
 
-- Set yourself as the author using `git commit --author="Agent <agent@opencode.ai>"`
-- Add the current user (Skye Brady <skye@blueskye.co.uk>) as a co-author by including `Co-authored-by: Skye Brady <skye@blueskye.co.uk>` in the commit message body
-- Follow the repo's existing commit style for the message subject line
-- Never amend or force-push
+- Use the repository/global git configuration for commit author identity; do not override it with `git commit --author`.
+- Do not add co-author trailers unless explicitly requested for a specific commit.
+- Follow the repo's existing commit style for the message subject line.
+- Never amend or force-push.
 
 <!-- END:git-attribution -->
 

@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ user: null });
   }
 
-  await ensureUserInDb();
+  const dbUser = await ensureUserInDb();
 
   return NextResponse.json({
     user: {
@@ -16,6 +16,7 @@ export async function GET() {
       name: session.user.name,
       email: session.user.email,
       picture: session.user.picture,
+      role: dbUser?.role ?? "USER",
     },
   });
 }

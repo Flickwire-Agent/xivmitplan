@@ -10,6 +10,7 @@ type SessionUser = {
   name: string;
   email: string;
   picture?: string;
+  role: string;
 };
 
 export function Navbar() {
@@ -42,15 +43,22 @@ export function Navbar() {
             New Plan
           </Button>
           {loading ? null : user ? (
-            <Anchor href="/auth/logout" underline="never" c="dimmed" fz="sm">
-              <Group gap="xs">
-                <Avatar size="sm" src={user.picture} radius="xl">
-                  {user.name.charAt(0).toUpperCase()}
-                </Avatar>
-                <Text visibleFrom="sm">{user.name}</Text>
-                <LogOut size={16} />
-              </Group>
-            </Anchor>
+            <>
+              {user.role === "ADMIN" && (
+                <Button variant="subtle" size="compact-sm" component={Link} href="/admin">
+                  Admin
+                </Button>
+              )}
+              <Anchor href="/auth/logout" underline="never" c="dimmed" fz="sm">
+                <Group gap="xs">
+                  <Avatar size="sm" src={user.picture} radius="xl">
+                    {user.name.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Text visibleFrom="sm">{user.name}</Text>
+                  <LogOut size={16} />
+                </Group>
+              </Anchor>
+            </>
           ) : (
             <Button variant="subtle" size="compact-sm" component="a" href="/auth/login">
               Sign In

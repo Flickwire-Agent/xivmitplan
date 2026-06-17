@@ -68,9 +68,7 @@ export default function SharedPlanPage() {
         <p className="text-muted-foreground">
           This share link may have expired or the plan was deleted.
         </p>
-        <Button render={<Link href="/plan/new" />}>
-          Create Your Own Plan
-        </Button>
+        <Button render={<Link href="/plan/new" />}>Create Your Own Plan</Button>
       </div>
     );
   }
@@ -122,9 +120,7 @@ export default function SharedPlanPage() {
               </th>
               {timestamps.map((ts, i) => (
                 <th key={i} className="px-2 py-2 text-center font-medium min-w-[100px]">
-                  <div className="text-xs text-muted-foreground">
-                    {formatTime(ts.time)}
-                  </div>
+                  <div className="text-xs text-muted-foreground">{formatTime(ts.time)}</div>
                   <div className="text-xs leading-tight">{ts.label}</div>
                   <Badge
                     variant="outline"
@@ -154,9 +150,7 @@ export default function SharedPlanPage() {
                     <td
                       key={i}
                       className={`px-2 py-2 text-center border-l ${
-                        ability
-                          ? "bg-green-50"
-                          : "bg-gray-50"
+                        ability ? "bg-green-50" : "bg-gray-50"
                       }`}
                     >
                       {ability && (

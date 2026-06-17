@@ -13,11 +13,7 @@ const navItems = [
   { href: "/admin/fights/new", label: "New Fight", icon: Sword },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <aside className="w-56 border-r bg-muted/30 p-4 hidden md:block">

@@ -13,9 +13,7 @@ function makeFight(id: string, name: string, patch: string, tier: string) {
     bossName: name,
     expansion: "Dawntrail",
     tier,
-    timestamps: [
-      { time: 0, label: "Pull", type: "OTHER" } as TimestampEntry,
-    ],
+    timestamps: [{ time: 0, label: "Pull", type: "OTHER" } as TimestampEntry],
   };
 }
 

@@ -21,7 +21,9 @@ export default function EditFightPage() {
   const params = useParams();
   const router = useRouter();
   const [fight, setFight] = useState<Fight | null>(null);
-  const [timestamps, setTimestamps] = useState<Array<{ time: number; label: string; type: string }>>([]);
+  const [timestamps, setTimestamps] = useState<
+    Array<{ time: number; label: string; type: string }>
+  >([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -46,9 +48,7 @@ export default function EditFightPage() {
   };
 
   const updateTimestamp = (index: number, field: string, value: string | number) => {
-    setTimestamps(timestamps.map((ts, i) =>
-      i === index ? { ...ts, [field]: value } : ts
-    ));
+    setTimestamps(timestamps.map((ts, i) => (i === index ? { ...ts, [field]: value } : ts)));
   };
 
   const handleSave = async () => {
@@ -107,11 +107,25 @@ export default function EditFightPage() {
                 value={ts.type}
                 onChange={(e) => updateTimestamp(i, "type", e.target.value)}
               >
-                {["RAIDWIDE", "TANKBUSTER", "STACK", "SPREAD", "KNOCKBACK", "ADD_PHASE", "ENRAGE", "OTHER"].map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                {[
+                  "RAIDWIDE",
+                  "TANKBUSTER",
+                  "STACK",
+                  "SPREAD",
+                  "KNOCKBACK",
+                  "ADD_PHASE",
+                  "ENRAGE",
+                  "OTHER",
+                ].map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
-              <button onClick={() => removeTimestamp(i)} className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={() => removeTimestamp(i)}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>

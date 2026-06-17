@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
 
 type Stats = {
   totalPlans: number;
@@ -22,7 +32,9 @@ export default function AdminPage() {
       .then((r) => r.json())
       .then((data: Array<{ id: string; name: string }>) => {
         const map: Record<string, string> = {};
-        data.forEach((f) => { map[f.id] = f.name; });
+        data.forEach((f) => {
+          map[f.id] = f.name;
+        });
         setFights(map);
       });
 

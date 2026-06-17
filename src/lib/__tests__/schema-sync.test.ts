@@ -8,10 +8,7 @@ describe("Prisma schemas", () => {
       join(import.meta.dirname, "../../../prisma/schema.prisma"),
       "utf-8",
     );
-    const pg = readFileSync(
-      join(import.meta.dirname, "../../../prisma/schema.pg.prisma"),
-      "utf-8",
-    );
+    const pg = readFileSync(join(import.meta.dirname, "../../../prisma/schema.pg.prisma"), "utf-8");
 
     const normalize = (s: string) =>
       s

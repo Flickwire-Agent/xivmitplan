@@ -29,23 +29,32 @@ export async function POST(request: NextRequest) {
         fightId: body.fightId,
         userId: session?.user?.sub || null,
         characters: {
-          create: (body.characters || []).map((char: { jobId: string; label?: string; slotIndex: number }, i: number) => ({
-            jobId: char.jobId,
-            label: char.label || null,
-            slotIndex: char.slotIndex ?? i,
-          })),
+          create: (body.characters || []).map(
+            (char: { jobId: string; label?: string; slotIndex: number }, i: number) => ({
+              jobId: char.jobId,
+              label: char.label || null,
+              slotIndex: char.slotIndex ?? i,
+            }),
+          ),
         },
         events: {
-          create: (body.events || []).map((ev: { timestampIndex: number; abilityId: string; note?: string }) => ({
-            timestampIndex: ev.timestampIndex,
-            abilityId: ev.abilityId,
-            note: ev.note || null,
-          })),
+          create: (body.events || []).map(
+            (ev: { timestampIndex: number; abilityId: string; note?: string }) => ({
+              timestampIndex: ev.timestampIndex,
+              abilityId: ev.abilityId,
+              note: ev.note || null,
+            }),
+          ),
         },
       },
       include: {
         fight: true,
-        characters: { include: { job: { include: { abilities: true } }, events: { include: { ability: true } } } },
+        characters: {
+          include: {
+            job: { include: { abilities: true } },
+            events: { include: { ability: true } },
+          },
+        },
         events: { include: { ability: true } },
       },
     });

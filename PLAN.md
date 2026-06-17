@@ -8,96 +8,96 @@ A web application for FFXIV raid parties to plan mitigation and healing cooldown
 
 ## Tech Stack
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| Framework | Next.js 15 (App Router, TypeScript) | SSR, colocated API routes, Vercel-ready |
-| Auth | Auth0 (`@auth0/nextjs-auth0` v4) | BFF proxy pattern, auto-mounts auth routes |
-| Database | Prisma ORM + SQLite (dev) / PostgreSQL (prod) | relational data model, type-safe queries |
-| UI | Tailwind CSS v4 + shadcn/ui | utility-first, accessible components |
-| Icons | lucide-react | shadcn default, lightweight |
-| Charts | recharts | for admin stats |
-| State | React hooks + URL params | plan state lives in URL; no heavy state lib needed |
-| Hosting | Vercel | zero-config Next.js deployment |
+| Layer     | Choice                                        | Rationale                                          |
+| --------- | --------------------------------------------- | -------------------------------------------------- |
+| Framework | Next.js 15 (App Router, TypeScript)           | SSR, colocated API routes, Vercel-ready            |
+| Auth      | Auth0 (`@auth0/nextjs-auth0` v4)              | BFF proxy pattern, auto-mounts auth routes         |
+| Database  | Prisma ORM + SQLite (dev) / PostgreSQL (prod) | relational data model, type-safe queries           |
+| UI        | Tailwind CSS v4 + shadcn/ui                   | utility-first, accessible components               |
+| Icons     | lucide-react                                  | shadcn default, lightweight                        |
+| Charts    | recharts                                      | for admin stats                                    |
+| State     | React hooks + URL params                      | plan state lives in URL; no heavy state lib needed |
+| Hosting   | Vercel                                        | zero-config Next.js deployment                     |
 
 ---
 
 ## Data Model (Prisma)
 
 User
-  id          String   @id @default(cuid())
-  auth0Id     String?  @unique
-  email       String?
-  displayName String?
-  role        Role     @default(USER)     // USER | ADMIN
-  bannedAt    DateTime?
-  createdAt   DateTime
-  plans       Plan[]
+id String @id @default(cuid())
+auth0Id String? @unique
+email String?
+displayName String?
+role Role @default(USER) // USER | ADMIN
+bannedAt DateTime?
+createdAt DateTime
+plans Plan[]
 Fight
-  id          String   @id @default(cuid())
-  slug        String   @unique            // "m4s"
-  name        String                      // "M4S - Wicked Thunder"
-  patch       String                      // "7.05"
-  bossName    String                      // "Wicked Thunder"
-  expansion   String                      // "Dawntrail"
-  tier        String                      // "AAC Light-heavyweight"
-  timestamps  Json                        // {time: 30, label: "Raidwide", type: "raidwide"}, ...
-  icon        String?
-  createdAt   DateTime
-  plans       Plan[]
+id String @id @default(cuid())
+slug String @unique // "m4s"
+name String // "M4S - Wicked Thunder"
+patch String // "7.05"
+bossName String // "Wicked Thunder"
+expansion String // "Dawntrail"
+tier String // "AAC Light-heavyweight"
+timestamps Json // {time: 30, label: "Raidwide", type: "raidwide"}, ...
+icon String?
+createdAt DateTime
+plans Plan[]
 Job
-  id       String     @id                 // "PLD", "WHM", etc.
-  name     String                         // "Paladin", "White Mage"
-  role     RoleName                       // TANK | HEALER | MELEE | RANGED | CASTER
-  iconUrl  String?
+id String @id // "PLD", "WHM", etc.
+name String // "Paladin", "White Mage"
+role RoleName // TANK | HEALER | MELEE | RANGED | CASTER
+iconUrl String?
 Ability
-  id          String      @id @default(cuid())
-  name        String                      // "Reprisal"
-  cooldown    Int                         // seconds
-  duration    Int?                        // seconds (effect window)
-  description String?
-  jobId       String?                     // null = role-wide
-  role        RoleName?                   // null = job-specific
-  category    Category                    // MITIGATION | HEALING | SHIELD | INVULN | PERSONAL
-  sharedSlot  SharedSlot?                 // REPRISAL | FEINT | ADDLE | RANGED | null (unique)
-  createdAt   DateTime
-  jobs        Job[]
+id String @id @default(cuid())
+name String // "Reprisal"
+cooldown Int // seconds
+duration Int? // seconds (effect window)
+description String?
+jobId String? // null = role-wide
+role RoleName? // null = job-specific
+category Category // MITIGATION | HEALING | SHIELD | INVULN | PERSONAL
+sharedSlot SharedSlot? // REPRISAL | FEINT | ADDLE | RANGED | null (unique)
+createdAt DateTime
+jobs Job[]
 Plan
-  id            String   @id @default(cuid())
-  title         String?
-  shareId       String?  @unique
-  fightId       String
-  userId        String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  characters    PlanCharacter[]
-  events        PlanEvent[]               // orphan events (no character slot)
-  fight         Fight     @relation(fields: fightId, refs: id)
-  user          User?     @relation(fields: userId, refs: id)
+id String @id @default(cuid())
+title String?
+shareId String? @unique
+fightId String
+userId String?
+createdAt DateTime
+updatedAt DateTime
+characters PlanCharacter[]
+events PlanEvent[] // orphan events (no character slot)
+fight Fight @relation(fields: fightId, refs: id)
+user User? @relation(fields: userId, refs: id)
 PlanCharacter
-  id          String       @id @default(cuid())
-  planId      String
-  jobId       String
-  label       String?
-  slotIndex   Int                        // 0-7
-  plan        Plan         @relation(fields: planId, refs: id)
-  job         Job          @relation(fields: jobId, refs: id)
-  events      PlanEvent[]
+id String @id @default(cuid())
+planId String
+jobId String
+label String?
+slotIndex Int // 0-7
+plan Plan @relation(fields: planId, refs: id)
+job Job @relation(fields: jobId, refs: id)
+events PlanEvent[]
 PlanEvent
-  id                String        @id @default(cuid())
-  planCharacterId   String?       // null if it's an orphan/role-mit event
-  planId            String?       // for orphan events
-  timestampIndex    Int           // index into fight.timestamps[]
-  abilityId         String
-  note              String?
-  planCharacter     PlanCharacter? @relation(fields: planCharacterId, refs: id)
-  plan              Plan?          @relation(fields: planId, refs: id)
-  ability           Ability        @relation(fields: abilityId, refs: id)
+id String @id @default(cuid())
+planCharacterId String? // null if it's an orphan/role-mit event
+planId String? // for orphan events
+timestampIndex Int // index into fight.timestamps[]
+abilityId String
+note String?
+planCharacter PlanCharacter? @relation(fields: planCharacterId, refs: id)
+plan Plan? @relation(fields: planId, refs: id)
+ability Ability @relation(fields: abilityId, refs: id)
 Enums:
-  RoleName    = TANK | HEALER | MELEE | RANGED | CASTER
-  Role        = USER | ADMIN
-  Category    = MITIGATION | HEALING | SHIELD | INVULN | PERSONAL
-  SharedSlot  = REPRISAL | FEINT | ADDLE | RANGED
-  EventType   = RAIDWIDE | TANKBUSTER | STACK | SPREAD | KNOCKBACK | ADD_PHASE | ENRAGE | OTHER
+RoleName = TANK | HEALER | MELEE | RANGED | CASTER
+Role = USER | ADMIN
+Category = MITIGATION | HEALING | SHIELD | INVULN | PERSONAL
+SharedSlot = REPRISAL | FEINT | ADDLE | RANGED
+EventType = RAIDWIDE | TANKBUSTER | STACK | SPREAD | KNOCKBACK | ADD_PHASE | ENRAGE | OTHER
 
 ---
 
@@ -105,48 +105,51 @@ Enums:
 
 ### Pages (App Router)
 
-| Route | Auth | Purpose |
-|---|---|---|
-| `/` | None | Landing page + create plan CTA |
-| `/plan/new` | None | Create new plan (fight select, party, timeline) |
-| `/plan/[id]` | None | Edit existing plan |
-| `/s/[shareId]` | None | View shared plan (read-only) |
-| `/admin` | Admin | Stats dashboard |
-| `/admin/users` | Admin | User list + moderation |
-| `/admin/fights/new` | Admin | Add new fight to catalogue |
-| `/admin/fights/[id]` | Admin | Edit fight timestamps |
-| Auth routes | Auto | `/auth/*` mounted by Auth0 SDK |
+| Route                | Auth  | Purpose                                         |
+| -------------------- | ----- | ----------------------------------------------- |
+| `/`                  | None  | Landing page + create plan CTA                  |
+| `/plan/new`          | None  | Create new plan (fight select, party, timeline) |
+| `/plan/[id]`         | None  | Edit existing plan                              |
+| `/s/[shareId]`       | None  | View shared plan (read-only)                    |
+| `/admin`             | Admin | Stats dashboard                                 |
+| `/admin/users`       | Admin | User list + moderation                          |
+| `/admin/fights/new`  | Admin | Add new fight to catalogue                      |
+| `/admin/fights/[id]` | Admin | Edit fight timestamps                           |
+| Auth routes          | Auto  | `/auth/*` mounted by Auth0 SDK                  |
 
 ### API Routes
 
-| Method | Route | Auth | Purpose |
-|---|---|---|---|
-| GET | `/api/fights` | None | List all fights |
-| GET | `/api/fights/[id]` | None | Fight with timestamps |
-| GET | `/api/jobs` | None | All jobs with their abilities |
-| POST | `/api/plans` | Optional | Create plan (attach user if logged in) |
-| GET | `/api/plans/[id]` | None | Get plan with relations |
-| PUT | `/api/plans/[id]` | None | Update plan (ownership check optional) |
-| PUT | `/api/plans/[id]/share` | Required | Generate shareId |
-| POST | `/api/plans/[id]/fork` | None | Fork a shared plan as new anonymous plan |
-| GET | `/api/admin/stats` | Admin | Usage statistics |
-| GET | `/api/admin/users` | Admin | List users |
-| PATCH | `/api/admin/users/[id]` | Admin | Update role/ban status |
-| POST | `/api/admin/fights` | Admin | Create fight |
-| PUT | `/api/admin/fights/[id]` | Admin | Update fight |
-| DELETE | `/api/admin/fights/[id]` | Admin | Delete fight |
+| Method | Route                    | Auth     | Purpose                                  |
+| ------ | ------------------------ | -------- | ---------------------------------------- |
+| GET    | `/api/fights`            | None     | List all fights                          |
+| GET    | `/api/fights/[id]`       | None     | Fight with timestamps                    |
+| GET    | `/api/jobs`              | None     | All jobs with their abilities            |
+| POST   | `/api/plans`             | Optional | Create plan (attach user if logged in)   |
+| GET    | `/api/plans/[id]`        | None     | Get plan with relations                  |
+| PUT    | `/api/plans/[id]`        | None     | Update plan (ownership check optional)   |
+| PUT    | `/api/plans/[id]/share`  | Required | Generate shareId                         |
+| POST   | `/api/plans/[id]/fork`   | None     | Fork a shared plan as new anonymous plan |
+| GET    | `/api/admin/stats`       | Admin    | Usage statistics                         |
+| GET    | `/api/admin/users`       | Admin    | List users                               |
+| PATCH  | `/api/admin/users/[id]`  | Admin    | Update role/ban status                   |
+| POST   | `/api/admin/fights`      | Admin    | Create fight                             |
+| PUT    | `/api/admin/fights/[id]` | Admin    | Update fight                             |
+| DELETE | `/api/admin/fights/[id]` | Admin    | Delete fight                             |
 
 ---
 
 ## Auth Flow
 
 ### First-user admin provisioning
+
 - Auth callback handler: `GET /api/auth/callback` (intercepted via middleware)
 - On first successful login: query `User` count; if 0, create user with `role: ADMIN`
 - Subsequent logins: create user if `auth0Id` not found, default `role: USER`
 
 ### Middleware shield
+
 `src/middleware.ts`:
+
 1. Run Auth0 proxy for all routes
 2. Public whitelist: `/`, `/plan/*`, `/s/*`, `/api/fights`, `/api/jobs`, `/api/plans` (GET only), `/auth/*`
 3. Protected: all other `/api/*` routes → require session
@@ -154,6 +157,7 @@ Enums:
 5. Ban check: on any authenticated request, check `user.bannedAt` → 403
 
 ### Save & Share flow
+
 Anonymous creates plan → plan saved with no userId
 Clicks "Save & Share" → redirected to Auth0 /auth/login
 After login → redirected back to /plan/id
@@ -162,6 +166,7 @@ Can now call PUT /api/plans/id/share → generates shareId
 Copies /s/shareId URL to clipboard
 
 ### Viewing shared plans
+
 Viewer opens /s/shareId
 GET /api/plans/shareId by shareId (not plan id)
 Returns plan data with characters + events
@@ -175,21 +180,23 @@ Renders read-only timeline grid
 `src/lib/cooldown-validator.ts`
 
 ### Logic
+
 For each character in plan (sorted by slotIndex):
-  For each event assigned to character (sorted by timestampIndex):
-    ability = event.ability
-    currentTime = fight.timestampsevent.timestampIndex.time
-    lastUsed = lastUsedMapcharacter.id || -Infinity
-    if currentTime - lastUsed < ability.cooldown:
-      violation = { type: "COOLDOWN", message: "...", time, character, ability }
-    lastUsedMapcharacter.id = currentTime
+For each event assigned to character (sorted by timestampIndex):
+ability = event.ability
+currentTime = fight.timestampsevent.timestampIndex.time
+lastUsed = lastUsedMapcharacter.id || -Infinity
+if currentTime - lastUsed < ability.cooldown:
+violation = { type: "COOLDOWN", message: "...", time, character, ability }
+lastUsedMapcharacter.id = currentTime
 Check sharedSlot collisions:
-  For each shared slot group (REPRISAL, FEINT, ADDLE, RANGED):
-    Collect all abilities with this sharedSlot activated at current time
-    If count > 1:
-      violation = { type: "SHARED_SLOT", message: "...", time, conflicting: [...] }
+For each shared slot group (REPRISAL, FEINT, ADDLE, RANGED):
+Collect all abilities with this sharedSlot activated at current time
+If count > 1:
+violation = { type: "SHARED_SLOT", message: "...", time, conflicting: [...] }
 
 ### Return type
+
 ```ts
 type ValidationIssue = {
   type: "COOLDOWN" | "SHARED_SLOT" | "MISSING"
@@ -400,3 +407,4 @@ Key UX Decisions
  8. Error states: "Plan not found", "Share link expired", network error banners
  9. Empty states: "No characters yet — add up to 8", "No abilities assigned — click a cell to pick one"
 10. Edge cases: fight with 0 timestamps (prevent selection), plan with 0 characters (show roster prompt), ability with 0s cooldown (always available), sharedSlot collision detected mid-fight (red cells at conflicting timestamps)
+```

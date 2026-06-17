@@ -45,7 +45,13 @@ interface PartyRosterProps {
   characters: Character[];
   onAdd: (jobId: string, jobName: string, abilities: Ability[], iconUrl?: string | null) => void;
   onRemove: (id: string) => void;
-  onChangeJob: (charId: string, jobId: string, jobName: string, abilities: Ability[], iconUrl?: string | null) => void;
+  onChangeJob: (
+    charId: string,
+    jobId: string,
+    jobName: string,
+    abilities: Ability[],
+    iconUrl?: string | null,
+  ) => void;
 }
 
 const roleColors: Record<string, string> = {
@@ -69,9 +75,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
   }, []);
 
   const roles = Array.from(new Set(jobs.map((j) => j.role)));
-  const filteredJobs = selectedRole
-    ? jobs.filter((j) => j.role === selectedRole)
-    : jobs;
+  const filteredJobs = selectedRole ? jobs.filter((j) => j.role === selectedRole) : jobs;
 
   const handleAdd = () => {
     if (!selectedJob) return;
@@ -84,7 +88,11 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
 
   const roleLabel = (role: string) => {
     const labels: Record<string, string> = {
-      TANK: "Tank", HEALER: "Healer", MELEE: "Melee", RANGED: "Ranged", CASTER: "Caster",
+      TANK: "Tank",
+      HEALER: "Healer",
+      MELEE: "Melee",
+      RANGED: "Ranged",
+      CASTER: "Caster",
     };
     return labels[role] ?? role;
   };
@@ -103,7 +111,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
             const job = jobs.find((j) => j.id === char.jobId);
             const role = job?.role ?? "";
             return (
-               <div
+              <div
                 key={char.id}
                 className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm"
               >
@@ -111,11 +119,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                   {roleLabel(role)}
                 </Badge>
                 {job?.iconUrl && (
-                  <img
-                    src={job.iconUrl}
-                    alt={job.name}
-                    className="h-5 w-5 object-contain"
-                  />
+                  <img src={job.iconUrl} alt={job.name} className="h-5 w-5 object-contain" />
                 )}
                 <Select
                   value={char.jobId}
@@ -123,7 +127,13 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                     if (newJobId === null) return;
                     const newJob = jobs.find((j) => j.id === newJobId);
                     if (newJob) {
-                      onChangeJob(char.id, newJob.id, newJob.name, newJob.abilities, newJob.iconUrl);
+                      onChangeJob(
+                        char.id,
+                        newJob.id,
+                        newJob.name,
+                        newJob.abilities,
+                        newJob.iconUrl,
+                      );
                     }
                   }}
                 >
@@ -135,11 +145,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
                       <SelectItem key={j.id} value={j.id}>
                         <span className="flex items-center gap-2">
                           {j.iconUrl && (
-                            <img
-                              src={j.iconUrl}
-                              alt={j.name}
-                              className="h-4 w-4 object-contain"
-                            />
+                            <img src={j.iconUrl} alt={j.name} className="h-4 w-4 object-contain" />
                           )}
                           {j.name} ({j.id})
                         </span>
@@ -166,7 +172,9 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
               </SelectTrigger>
               <SelectContent>
                 {roles.map((r) => (
-                  <SelectItem key={r} value={r}>{roleLabel(r)}</SelectItem>
+                  <SelectItem key={r} value={r}>
+                    {roleLabel(r)}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -187,9 +195,7 @@ export function PartyRoster({ characters, onAdd, onRemove, onChangeJob }: PartyR
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-2">
-            Party is full (8/8)
-          </p>
+          <p className="text-sm text-muted-foreground text-center py-2">Party is full (8/8)</p>
         )}
       </CardContent>
     </Card>

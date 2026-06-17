@@ -40,7 +40,14 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
   }
 
   // Check shared slot collisions
-  const sharedSlotGroups = new Map<string, Array<{ timestampIndex: number; character: { id: string; label: string; job: string }; ability: { id: string; name: string } }>>();
+  const sharedSlotGroups = new Map<
+    string,
+    Array<{
+      timestampIndex: number;
+      character: { id: string; label: string; job: string };
+      ability: { id: string; name: string };
+    }>
+  >();
 
   for (const character of characters) {
     for (const event of character.events) {
@@ -73,11 +80,11 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
       issues.push({
         type: "SHARED_SLOT",
         severity: "ERROR",
-        message: `Multiple ${conflicting[0].ability.name} abilities assigned at the same time (${conflicting.map(c => c.character.label).join(", ")})`,
+        message: `Multiple ${conflicting[0].ability.name} abilities assigned at the same time (${conflicting.map((c) => c.character.label).join(", ")})`,
         timestampIndex,
         timestampLabel: ts.label,
         time: ts.time,
-        conflicting: conflicting.map(c => ({
+        conflicting: conflicting.map((c) => ({
           character: c.character.label,
           ability: c.ability.name,
         })),

@@ -14,7 +14,8 @@ function createPrismaClient() {
   }
 
   try {
-    const { PrismaLibSql } = require("@prisma/adapter-libsql") as typeof import("@prisma/adapter-libsql");
+    const { PrismaLibSql } =
+      require("@prisma/adapter-libsql") as typeof import("@prisma/adapter-libsql");
     const path = require("path");
     const filePath = dbUrl.replace("file:", "").trim();
     const absolutePath = path.resolve(filePath);

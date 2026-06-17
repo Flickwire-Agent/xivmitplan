@@ -50,7 +50,8 @@ export function FightSelector({ fights, selected, onSelect }: FightSelectorProps
       </Select>
       {selected && (
         <p className="text-xs text-muted-foreground">
-          {selected.tier} &middot; {selected.expansion} &middot; {selected.timestamps.length} mechanics
+          {selected.tier} &middot; {selected.expansion} &middot; {selected.timestamps.length}{" "}
+          mechanics
         </p>
       )}
     </div>

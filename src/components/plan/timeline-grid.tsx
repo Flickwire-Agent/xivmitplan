@@ -3,18 +3,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { X, Search } from "lucide-react";
@@ -46,7 +36,13 @@ interface TimelineGridProps {
   validation: ValidationIssue[];
   onAssign: (charId: string, timestampIndex: number, abilityId: string) => void;
   onRemove: (charId: string, timestampIndex: number) => void;
-  onMoveAbility: (sourceCharId: string, sourceTimestampIndex: number, targetCharId: string, targetTimestampIndex: number, abilityId: string) => void;
+  onMoveAbility: (
+    sourceCharId: string,
+    sourceTimestampIndex: number,
+    targetCharId: string,
+    targetTimestampIndex: number,
+    abilityId: string,
+  ) => void;
 }
 
 const eventTypeColors: Record<string, string> = {
@@ -95,10 +91,19 @@ export function TimelineGrid({
     PERSONAL: "#9ca3af",
   };
 
-  function getDurationCoverage(): Map<string, Map<number, { ability: Ability; startIndex: number; endIndex: number }>> {
-    const coverage = new Map<string, Map<number, { ability: Ability; startIndex: number; endIndex: number }>>();
+  function getDurationCoverage(): Map<
+    string,
+    Map<number, { ability: Ability; startIndex: number; endIndex: number }>
+  > {
+    const coverage = new Map<
+      string,
+      Map<number, { ability: Ability; startIndex: number; endIndex: number }>
+    >();
     for (const char of characters) {
-      const charCoverage = new Map<number, { ability: Ability; startIndex: number; endIndex: number }>();
+      const charCoverage = new Map<
+        number,
+        { ability: Ability; startIndex: number; endIndex: number }
+      >();
       for (const event of char.events) {
         const ability = char.abilities.find((a) => a.id === event.abilityId);
         if (!ability || !ability.duration) continue;
@@ -116,7 +121,7 @@ export function TimelineGrid({
         }
         for (let i = startIdx; i <= endIdx; i++) {
           const existing = charCoverage.get(i);
-          if (!existing || (endIdx - startIdx) > (existing.endIndex - existing.startIndex)) {
+          if (!existing || endIdx - startIdx > existing.endIndex - existing.startIndex) {
             charCoverage.set(i, { ability, startIndex: startIdx, endIndex: endIdx });
           }
         }
@@ -142,10 +147,14 @@ export function TimelineGrid({
 
   const cellStyle = (status: string) => {
     switch (status) {
-      case "assigned": return "bg-green-100 border-green-300";
-      case "error": return "bg-red-100 border-red-300";
-      case "warning": return "bg-yellow-100 border-yellow-300";
-      default: return "bg-gray-50 border-gray-200 hover:bg-gray-100";
+      case "assigned":
+        return "bg-green-100 border-green-300";
+      case "error":
+        return "bg-red-100 border-red-300";
+      case "warning":
+        return "bg-yellow-100 border-yellow-300";
+      default:
+        return "bg-gray-50 border-gray-200 hover:bg-gray-100";
     }
   };
 
@@ -195,9 +204,7 @@ export function TimelineGrid({
                   </div>
                 </td>
                 {characters.map((char) => {
-                  const event = char.events.find(
-                    (e) => e.timestampIndex === i,
-                  );
+                  const event = char.events.find((e) => e.timestampIndex === i);
                   const ability = event
                     ? char.abilities.find((a) => a.id === event.abilityId)
                     : null;
@@ -212,14 +219,17 @@ export function TimelineGrid({
                   const isStart = coverage && coverage.startIndex === i;
 
                   const barColor = ability
-                    ? categoryBarColors[ability.category] ?? "#9ca3af"
+                    ? (categoryBarColors[ability.category] ?? "#9ca3af")
                     : coverage
-                    ? categoryBarColors[coverage.ability.category] ?? "#9ca3af"
-                    : null;
+                      ? (categoryBarColors[coverage.ability.category] ?? "#9ca3af")
+                      : null;
 
                   const handleDragStart = (e: React.DragEvent) => {
                     if (!ability) return;
-                    e.dataTransfer.setData("text/plain", JSON.stringify({ charId: char.id, timestampIndex: i, abilityId: ability.id }));
+                    e.dataTransfer.setData(
+                      "text/plain",
+                      JSON.stringify({ charId: char.id, timestampIndex: i, abilityId: ability.id }),
+                    );
                     e.dataTransfer.effectAllowed = "move";
                     setDragSource({ charId: char.id, timestampIndex: i, abilityId: ability.id });
                   };
@@ -301,8 +311,7 @@ export function TimelineGrid({
                           <span
                             className={cn(
                               "inline-block w-2 h-2 rounded-full shrink-0",
-                              categoryColors[ability.category] ??
-                                "bg-gray-500",
+                              categoryColors[ability.category] ?? "bg-gray-500",
                             )}
                           />
                           <Tooltip>
@@ -343,14 +352,14 @@ export function TimelineGrid({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="text-xs">
-                              {coverage.ability.name} — placed at {timestamps[coverage.startIndex]?.label ?? `row ${coverage.startIndex + 1}`}
+                              {coverage.ability.name} — placed at{" "}
+                              {timestamps[coverage.startIndex]?.label ??
+                                `row ${coverage.startIndex + 1}`}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       ) : (
-                        <span className="text-xs text-muted-foreground/60 italic pl-1">
-                          +
-                        </span>
+                        <span className="text-xs text-muted-foreground/60 italic pl-1">+</span>
                       )}
                     </td>
                   );
@@ -365,17 +374,11 @@ export function TimelineGrid({
         open={selectedCell !== null}
         onOpenChange={() => setSelectedCell(null)}
         character={
-          selectedCell
-            ? characters.find((c) => c.id === selectedCell.charId) ?? null
-            : null
+          selectedCell ? (characters.find((c) => c.id === selectedCell.charId) ?? null) : null
         }
         onSelect={(abilityId) => {
           if (selectedCell) {
-            onAssign(
-              selectedCell.charId,
-              selectedCell.timestampIndex,
-              abilityId,
-            );
+            onAssign(selectedCell.charId, selectedCell.timestampIndex, abilityId);
             setSelectedCell(null);
           }
         }}
@@ -399,16 +402,11 @@ function AbilitySelectorDialog({
 
   if (!character) return null;
 
-  const categories = Array.from(
-    new Set(character.abilities.map((a) => a.category)),
-  );
+  const categories = Array.from(new Set(character.abilities.map((a) => a.category)));
 
   const filtered = (cat: string) =>
     character.abilities.filter(
-      (a) =>
-        a.category === cat &&
-        (!search ||
-          a.name.toLowerCase().includes(search.toLowerCase())),
+      (a) => a.category === cat && (!search || a.name.toLowerCase().includes(search.toLowerCase())),
     );
 
   return (

@@ -8,13 +8,10 @@ export default function Home() {
     <div className="flex flex-col items-center">
       <section className="flex flex-col items-center gap-6 py-24 px-4 text-center">
         <Shield className="h-12 w-12 text-primary" />
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          FFXIV Mitigation Planner
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">FFXIV Mitigation Planner</h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          Plan and optimize your raid party&apos;s mitigation and healing cooldowns
-          across any encounter. Assign abilities, validate cooldowns, and share
-          plans with your static.
+          Plan and optimize your raid party&apos;s mitigation and healing cooldowns across any
+          encounter. Assign abilities, validate cooldowns, and share plans with your static.
         </p>
         <div className="flex gap-4">
           <Button size="lg" render={<Link href="/plan/new" />}>
@@ -32,8 +29,8 @@ export default function Home() {
             <Sword className="h-8 w-8 text-primary mb-2" />
             <CardTitle className="text-lg">Job Abilities</CardTitle>
             <CardDescription>
-              All 21 jobs with their role-appropriate mitigation, shielding,
-              healing, and personal cooldowns.
+              All 21 jobs with their role-appropriate mitigation, shielding, healing, and personal
+              cooldowns.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -42,8 +39,8 @@ export default function Home() {
             <Clock className="h-8 w-8 text-primary mb-2" />
             <CardTitle className="text-lg">Cooldown Validation</CardTitle>
             <CardDescription>
-              Real-time validation catches double-taps, shared slot collisions,
-              and missing assignments.
+              Real-time validation catches double-taps, shared slot collisions, and missing
+              assignments.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -52,8 +49,8 @@ export default function Home() {
             <Users className="h-8 w-8 text-primary mb-2" />
             <CardTitle className="text-lg">Share & Fork</CardTitle>
             <CardDescription>
-              Share read-only plans with your party or fork existing plans to
-              create your own version.
+              Share read-only plans with your party or fork existing plans to create your own
+              version.
             </CardDescription>
           </CardHeader>
         </Card>

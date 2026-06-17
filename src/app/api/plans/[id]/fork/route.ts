@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const original = await prisma.plan.findUnique({
@@ -48,7 +45,12 @@ export async function POST(
       },
       include: {
         fight: true,
-        characters: { include: { job: { include: { abilities: true } }, events: { include: { ability: true } } } },
+        characters: {
+          include: {
+            job: { include: { abilities: true } },
+            events: { include: { ability: true } },
+          },
+        },
         events: { include: { ability: true } },
       },
     });

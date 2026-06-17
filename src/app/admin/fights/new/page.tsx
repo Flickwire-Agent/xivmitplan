@@ -16,9 +16,9 @@ export default function NewFightPage() {
     expansion: "Dawntrail",
     tier: "",
   });
-  const [timestamps, setTimestamps] = useState<Array<{ time: number; label: string; type: string }>>([
-    { time: 0, label: "Pull", type: "OTHER" },
-  ]);
+  const [timestamps, setTimestamps] = useState<
+    Array<{ time: number; label: string; type: string }>
+  >([{ time: 0, label: "Pull", type: "OTHER" }]);
   const [saving, setSaving] = useState(false);
 
   const addTimestamp = () => {
@@ -31,9 +31,7 @@ export default function NewFightPage() {
   };
 
   const updateTimestamp = (index: number, field: string, value: string | number) => {
-    setTimestamps(timestamps.map((ts, i) =>
-      i === index ? { ...ts, [field]: value } : ts
-    ));
+    setTimestamps(timestamps.map((ts, i) => (i === index ? { ...ts, [field]: value } : ts)));
   };
 
   const handleSubmit = async () => {
@@ -147,11 +145,25 @@ export default function NewFightPage() {
                 value={ts.type}
                 onChange={(e) => updateTimestamp(i, "type", e.target.value)}
               >
-                {["RAIDWIDE", "TANKBUSTER", "STACK", "SPREAD", "KNOCKBACK", "ADD_PHASE", "ENRAGE", "OTHER"].map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                {[
+                  "RAIDWIDE",
+                  "TANKBUSTER",
+                  "STACK",
+                  "SPREAD",
+                  "KNOCKBACK",
+                  "ADD_PHASE",
+                  "ENRAGE",
+                  "OTHER",
+                ].map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
-              <button onClick={() => removeTimestamp(i)} className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={() => removeTimestamp(i)}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>

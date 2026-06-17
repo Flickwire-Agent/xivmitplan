@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const plan = await prisma.plan.findUnique({
@@ -30,10 +27,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const body = await request.json();
@@ -47,24 +41,38 @@ export async function PUT(
         title: body.title,
         fightId: body.fightId,
         characters: {
-          create: (body.characters || []).map((char: { jobId: string; label?: string; slotIndex: number }, i: number) => ({
-            jobId: char.jobId,
-            label: char.label || null,
-            slotIndex: char.slotIndex ?? i,
-          })),
+          create: (body.characters || []).map(
+            (char: { jobId: string; label?: string; slotIndex: number }, i: number) => ({
+              jobId: char.jobId,
+              label: char.label || null,
+              slotIndex: char.slotIndex ?? i,
+            }),
+          ),
         },
         events: {
-          create: (body.events || []).map((ev: { planCharacterId?: string; timestampIndex: number; abilityId: string; note?: string }) => ({
-            planCharacterId: ev.planCharacterId || null,
-            timestampIndex: ev.timestampIndex,
-            abilityId: ev.abilityId,
-            note: ev.note || null,
-          })),
+          create: (body.events || []).map(
+            (ev: {
+              planCharacterId?: string;
+              timestampIndex: number;
+              abilityId: string;
+              note?: string;
+            }) => ({
+              planCharacterId: ev.planCharacterId || null,
+              timestampIndex: ev.timestampIndex,
+              abilityId: ev.abilityId,
+              note: ev.note || null,
+            }),
+          ),
         },
       },
       include: {
         fight: true,
-        characters: { include: { job: { include: { abilities: true } }, events: { include: { ability: true } } } },
+        characters: {
+          include: {
+            job: { include: { abilities: true } },
+            events: { include: { ability: true } },
+          },
+        },
         events: { include: { ability: true } },
       },
     });

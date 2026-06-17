@@ -29,7 +29,9 @@ export default function AdminUsersPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const toggleRole = async (user: AdminUser) => {
     const newRole = user.role === "ADMIN" ? "USER" : "ADMIN";
@@ -82,9 +84,7 @@ export default function AdminUsersPage() {
                       <span>{user.displayName ?? "Anonymous"}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {user.email ?? "—"}
-                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
                   <td className="px-4 py-3">
                     <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
                       {user.role}
@@ -100,18 +100,10 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex gap-1 justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleRole(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleRole(user)}>
                         {user.role === "ADMIN" ? "Demote" : "Promote"}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleBan(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleBan(user)}>
                         {user.bannedAt ? "Unban" : "Ban"}
                       </Button>
                     </div>

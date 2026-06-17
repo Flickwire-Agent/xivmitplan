@@ -18,7 +18,15 @@ type PlanCharacter = {
   label: string;
   slotIndex: number;
   iconUrl?: string | null;
-  abilities: Array<{ id: string; name: string; cooldown: number; duration: number | null; category: string; sharedSlot: string | null; iconUrl?: string | null }>;
+  abilities: Array<{
+    id: string;
+    name: string;
+    cooldown: number;
+    duration: number | null;
+    category: string;
+    sharedSlot: string | null;
+    iconUrl?: string | null;
+  }>;
   events: Array<{ id: string; timestampIndex: number; abilityId: string; note: string | null }>;
 };
 
@@ -65,7 +73,25 @@ export default function NewPlanPage() {
         jobId: c.jobId,
         label: c.label,
         slotIndex: c.slotIndex,
-        job: { id: c.jobId, name: c.jobName, role: "TANK" as any, iconUrl: c.iconUrl ?? null, abilities: c.abilities.map(a => ({ id: a.id, name: a.name, cooldown: a.cooldown, duration: a.duration, description: null, jobId: c.jobId, role: null, category: a.category as any, sharedSlot: a.sharedSlot as any, iconUrl: a.iconUrl ?? null, createdAt: new Date() })) },
+        job: {
+          id: c.jobId,
+          name: c.jobName,
+          role: "TANK" as any,
+          iconUrl: c.iconUrl ?? null,
+          abilities: c.abilities.map((a) => ({
+            id: a.id,
+            name: a.name,
+            cooldown: a.cooldown,
+            duration: a.duration,
+            description: null,
+            jobId: c.jobId,
+            role: null,
+            category: a.category as any,
+            sharedSlot: a.sharedSlot as any,
+            iconUrl: a.iconUrl ?? null,
+            createdAt: new Date(),
+          })),
+        },
         events: c.events.map((e) => ({
           id: e.id,
           planCharacterId: c.id,
@@ -100,7 +126,12 @@ export default function NewPlanPage() {
     }
   }, [characters, selectedFight, runValidation]);
 
-  const addCharacter = (jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
+  const addCharacter = (
+    jobId: string,
+    jobName: string,
+    abilities: PlanCharacter["abilities"],
+    iconUrl?: string | null,
+  ) => {
     if (characters.length >= 8) return;
     const newChar: PlanCharacter = {
       id: crypto.randomUUID(),
@@ -119,53 +150,98 @@ export default function NewPlanPage() {
     setCharacters(characters.filter((c) => c.id !== id));
   };
 
-  const updateCharacterJob = (charId: string, jobId: string, jobName: string, abilities: PlanCharacter["abilities"], iconUrl?: string | null) => {
-    setCharacters(characters.map((c) =>
-      c.id === charId ? { ...c, jobId, jobName, label: jobName, abilities, events: [], iconUrl } : c
-    ));
+  const updateCharacterJob = (
+    charId: string,
+    jobId: string,
+    jobName: string,
+    abilities: PlanCharacter["abilities"],
+    iconUrl?: string | null,
+  ) => {
+    setCharacters(
+      characters.map((c) =>
+        c.id === charId
+          ? { ...c, jobId, jobName, label: jobName, abilities, events: [], iconUrl }
+          : c,
+      ),
+    );
   };
 
   const assignAbility = (charId: string, timestampIndex: number, abilityId: string) => {
-    setCharacters(characters.map((c) => {
-      if (c.id !== charId) return c;
-      const existing = c.events.find((e) => e.timestampIndex === timestampIndex);
-      const newEvents = existing
-        ? c.events.map((e) => e.timestampIndex === timestampIndex ? { ...e, abilityId } : e)
-        : [...c.events, { id: crypto.randomUUID(), timestampIndex, abilityId, note: null }];
-      return { ...c, events: newEvents };
-    }));
+    setCharacters(
+      characters.map((c) => {
+        if (c.id !== charId) return c;
+        const existing = c.events.find((e) => e.timestampIndex === timestampIndex);
+        const newEvents = existing
+          ? c.events.map((e) => (e.timestampIndex === timestampIndex ? { ...e, abilityId } : e))
+          : [...c.events, { id: crypto.randomUUID(), timestampIndex, abilityId, note: null }];
+        return { ...c, events: newEvents };
+      }),
+    );
   };
 
   const removeAbility = (charId: string, timestampIndex: number) => {
-    setCharacters(characters.map((c) =>
-      c.id === charId
-        ? { ...c, events: c.events.filter((e) => e.timestampIndex !== timestampIndex) }
-        : c
-    ));
+    setCharacters(
+      characters.map((c) =>
+        c.id === charId
+          ? { ...c, events: c.events.filter((e) => e.timestampIndex !== timestampIndex) }
+          : c,
+      ),
+    );
   };
 
-  const moveAbility = (sourceCharId: string, sourceTimestampIndex: number, targetCharId: string, targetTimestampIndex: number, abilityId: string) => {
-    setCharacters(characters.map((c) => {
-      if (c.id === sourceCharId && c.id === targetCharId) {
-        const filtered = c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex);
-        const existing = filtered.find((e) => e.timestampIndex === targetTimestampIndex);
-        const newEvents = existing
-          ? filtered.map((e) => e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e)
-          : [...filtered, { id: crypto.randomUUID(), timestampIndex: targetTimestampIndex, abilityId, note: null }];
-        return { ...c, events: newEvents };
-      }
-      if (c.id === sourceCharId) {
-        return { ...c, events: c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex) };
-      }
-      if (c.id === targetCharId) {
-        const existing = c.events.find((e) => e.timestampIndex === targetTimestampIndex);
-        const newEvents = existing
-          ? c.events.map((e) => e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e)
-          : [...c.events, { id: crypto.randomUUID(), timestampIndex: targetTimestampIndex, abilityId, note: null }];
-        return { ...c, events: newEvents };
-      }
-      return c;
-    }));
+  const moveAbility = (
+    sourceCharId: string,
+    sourceTimestampIndex: number,
+    targetCharId: string,
+    targetTimestampIndex: number,
+    abilityId: string,
+  ) => {
+    setCharacters(
+      characters.map((c) => {
+        if (c.id === sourceCharId && c.id === targetCharId) {
+          const filtered = c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex);
+          const existing = filtered.find((e) => e.timestampIndex === targetTimestampIndex);
+          const newEvents = existing
+            ? filtered.map((e) =>
+                e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e,
+              )
+            : [
+                ...filtered,
+                {
+                  id: crypto.randomUUID(),
+                  timestampIndex: targetTimestampIndex,
+                  abilityId,
+                  note: null,
+                },
+              ];
+          return { ...c, events: newEvents };
+        }
+        if (c.id === sourceCharId) {
+          return {
+            ...c,
+            events: c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex),
+          };
+        }
+        if (c.id === targetCharId) {
+          const existing = c.events.find((e) => e.timestampIndex === targetTimestampIndex);
+          const newEvents = existing
+            ? c.events.map((e) =>
+                e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e,
+              )
+            : [
+                ...c.events,
+                {
+                  id: crypto.randomUUID(),
+                  timestampIndex: targetTimestampIndex,
+                  abilityId,
+                  note: null,
+                },
+              ];
+          return { ...c, events: newEvents };
+        }
+        return c;
+      }),
+    );
   };
 
   const savePlan = async () => {
@@ -177,7 +253,7 @@ export default function NewPlanPage() {
           timestampIndex: e.timestampIndex,
           abilityId: e.abilityId,
           note: e.note,
-        }))
+        })),
       );
 
       const body = {
@@ -225,11 +301,7 @@ export default function NewPlanPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <FightSelector
-            fights={fights}
-            selected={selectedFight}
-            onSelect={setSelectedFight}
-          />
+          <FightSelector fights={fights} selected={selectedFight} onSelect={setSelectedFight} />
 
           {selectedFight && (
             <>
@@ -255,9 +327,7 @@ export default function NewPlanPage() {
         </div>
 
         <div className="space-y-6">
-          {validation.length > 0 && (
-            <ValidationPanel issues={validation} timestamps={timestamps} />
-          )}
+          {validation.length > 0 && <ValidationPanel issues={validation} timestamps={timestamps} />}
         </div>
       </div>
     </div>

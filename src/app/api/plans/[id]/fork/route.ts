@@ -29,6 +29,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
             events: {
               create: char.events.map((ev) => ({
                 timestampIndex: ev.timestampIndex,
+                time: ev.time,
                 abilityId: ev.abilityId,
                 note: ev.note,
               })),
@@ -38,6 +39,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         events: {
           create: original.events.map((ev) => ({
             timestampIndex: ev.timestampIndex,
+            time: ev.time,
             abilityId: ev.abilityId,
             note: ev.note,
           })),

@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth0.getSession();
     const body = await request.json();
+    const events = body.events || [];
 
     const plan = await prisma.plan.create({
       data: {
@@ -30,19 +31,31 @@ export async function POST(request: NextRequest) {
         userId: session?.user?.sub || null,
         characters: {
           create: (body.characters || []).map(
-            (char: { jobId: string; label?: string; slotIndex: number }, i: number) => ({
+            (
+              char: { id?: string; jobId: string; label?: string; slotIndex: number },
+              i: number,
+            ) => ({
+              id: char.id,
               jobId: char.jobId,
               label: char.label || null,
               slotIndex: char.slotIndex ?? i,
-            }),
-          ),
-        },
-        events: {
-          create: (body.events || []).map(
-            (ev: { timestampIndex: number; abilityId: string; note?: string }) => ({
-              timestampIndex: ev.timestampIndex,
-              abilityId: ev.abilityId,
-              note: ev.note || null,
+              events: {
+                create: events
+                  .filter((ev: { planCharacterId?: string }) => ev.planCharacterId === char.id)
+                  .map(
+                    (ev: {
+                      timestampIndex: number;
+                      time?: number;
+                      abilityId: string;
+                      note?: string;
+                    }) => ({
+                      timestampIndex: ev.timestampIndex,
+                      time: ev.time ?? 0,
+                      abilityId: ev.abilityId,
+                      note: ev.note || null,
+                    }),
+                  ),
+              },
             }),
           ),
         },

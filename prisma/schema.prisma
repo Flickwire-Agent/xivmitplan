@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum RoleName {
@@ -124,6 +124,7 @@ model PlanEvent {
   planCharacterId String?
   planId          String?
   timestampIndex  Int
+  time            Int            @default(0)
   abilityId       String
   note            String?
   planCharacter   PlanCharacter? @relation(fields: [planCharacterId], references: [id], onDelete: Cascade)

@@ -26,7 +26,13 @@ type PlanCharacter = {
     sharedSlot: string | null;
     iconUrl?: string | null;
   }>;
-  events: Array<{ id: string; timestampIndex: number; abilityId: string; note: string | null }>;
+  events: Array<{
+    id: string;
+    timestampIndex: number;
+    time: number;
+    abilityId: string;
+    note: string | null;
+  }>;
 };
 
 type FightData = {
@@ -96,6 +102,7 @@ export default function NewPlanPage() {
           planCharacterId: c.id,
           planId: null,
           timestampIndex: e.timestampIndex,
+          time: e.time,
           abilityId: e.abilityId,
           note: e.note,
           ability: c.abilities.find((a) => a.id === e.abilityId) ?? {
@@ -165,50 +172,67 @@ export default function NewPlanPage() {
     );
   };
 
-  const assignAbility = (charId: string, timestampIndex: number, abilityId: string) => {
+  const nearestTimestampIndex = (time: number) => {
+    if (timestamps.length === 0) return 0;
+    return timestamps.reduce(
+      (nearest, ts, index) =>
+        Math.abs(ts.time - time) < Math.abs(timestamps[nearest].time - time) ? index : nearest,
+      0,
+    );
+  };
+
+  const assignAbility = (charId: string, time: number, abilityId: string) => {
+    const roundedTime = Math.max(0, Math.round(time));
+    const timestampIndex = nearestTimestampIndex(roundedTime);
     setCharacters(
       characters.map((c) => {
         if (c.id !== charId) return c;
-        const existing = c.events.find((e) => e.timestampIndex === timestampIndex);
+        const existing = c.events.find((e) => e.time === roundedTime);
         const newEvents = existing
-          ? c.events.map((e) => (e.timestampIndex === timestampIndex ? { ...e, abilityId } : e))
-          : [...c.events, { id: crypto.randomUUID(), timestampIndex, abilityId, note: null }];
+          ? c.events.map((e) =>
+              e.time === roundedTime ? { ...e, timestampIndex, time: roundedTime, abilityId } : e,
+            )
+          : [
+              ...c.events,
+              { id: crypto.randomUUID(), timestampIndex, time: roundedTime, abilityId, note: null },
+            ];
         return { ...c, events: newEvents };
       }),
     );
   };
 
-  const removeAbility = (charId: string, timestampIndex: number) => {
+  const removeAbility = (charId: string, eventId: string) => {
     setCharacters(
       characters.map((c) =>
-        c.id === charId
-          ? { ...c, events: c.events.filter((e) => e.timestampIndex !== timestampIndex) }
-          : c,
+        c.id === charId ? { ...c, events: c.events.filter((e) => e.id !== eventId) } : c,
       ),
     );
   };
 
   const moveAbility = (
     sourceCharId: string,
-    sourceTimestampIndex: number,
+    sourceEventId: string,
     targetCharId: string,
-    targetTimestampIndex: number,
+    targetTime: number,
     abilityId: string,
   ) => {
+    const roundedTime = Math.max(0, Math.round(targetTime));
+    const timestampIndex = nearestTimestampIndex(roundedTime);
     setCharacters(
       characters.map((c) => {
         if (c.id === sourceCharId && c.id === targetCharId) {
-          const filtered = c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex);
-          const existing = filtered.find((e) => e.timestampIndex === targetTimestampIndex);
+          const filtered = c.events.filter((e) => e.id !== sourceEventId);
+          const existing = filtered.find((e) => e.time === roundedTime);
           const newEvents = existing
             ? filtered.map((e) =>
-                e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e,
+                e.time === roundedTime ? { ...e, timestampIndex, time: roundedTime, abilityId } : e,
               )
             : [
                 ...filtered,
                 {
-                  id: crypto.randomUUID(),
-                  timestampIndex: targetTimestampIndex,
+                  id: sourceEventId,
+                  timestampIndex,
+                  time: roundedTime,
                   abilityId,
                   note: null,
                 },
@@ -218,20 +242,21 @@ export default function NewPlanPage() {
         if (c.id === sourceCharId) {
           return {
             ...c,
-            events: c.events.filter((e) => e.timestampIndex !== sourceTimestampIndex),
+            events: c.events.filter((e) => e.id !== sourceEventId),
           };
         }
         if (c.id === targetCharId) {
-          const existing = c.events.find((e) => e.timestampIndex === targetTimestampIndex);
+          const existing = c.events.find((e) => e.time === roundedTime);
           const newEvents = existing
             ? c.events.map((e) =>
-                e.timestampIndex === targetTimestampIndex ? { ...e, abilityId } : e,
+                e.time === roundedTime ? { ...e, timestampIndex, time: roundedTime, abilityId } : e,
               )
             : [
                 ...c.events,
                 {
-                  id: crypto.randomUUID(),
-                  timestampIndex: targetTimestampIndex,
+                  id: sourceEventId,
+                  timestampIndex,
+                  time: roundedTime,
                   abilityId,
                   note: null,
                 },
@@ -250,6 +275,7 @@ export default function NewPlanPage() {
         c.events.map((e) => ({
           planCharacterId: c.id,
           timestampIndex: e.timestampIndex,
+          time: e.time,
           abilityId: e.abilityId,
           note: e.note,
         })),
@@ -259,6 +285,7 @@ export default function NewPlanPage() {
         title: `${selectedFight?.name ?? "Untitled"} Plan`,
         fightId: selectedFight?.id,
         characters: characters.map((c) => ({
+          id: c.id,
           jobId: c.jobId,
           label: c.label,
           slotIndex: c.slotIndex,

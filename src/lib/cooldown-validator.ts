@@ -8,13 +8,15 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
   const characters = plan.characters.sort((a, b) => a.slotIndex - b.slotIndex);
 
   for (const character of characters) {
-    const events = character.events.sort((a, b) => a.timestampIndex - b.timestampIndex);
+    const events = character.events.sort(
+      (a, b) => getEventTime(a, timestamps) - getEventTime(b, timestamps),
+    );
 
     for (const event of events) {
       const ts = timestamps[event.timestampIndex];
       if (!ts) continue;
 
-      const currentTime = ts.time;
+      const currentTime = getEventTime(event, timestamps);
       const ability = event.ability;
       const lastUsed = lastUsedMap.get(character.id) ?? -Infinity;
 
@@ -44,6 +46,7 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
     string,
     Array<{
       timestampIndex: number;
+      time: number;
       character: { id: string; label: string; job: string };
       ability: { id: string; name: string };
     }>
@@ -54,12 +57,14 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
       const ability = event.ability;
       if (!ability.sharedSlot) continue;
 
-      const key = `${event.timestampIndex}-${ability.sharedSlot}`;
+      const currentTime = getEventTime(event, timestamps);
+      const key = `${currentTime}-${ability.sharedSlot}`;
       if (!sharedSlotGroups.has(key)) {
         sharedSlotGroups.set(key, []);
       }
       sharedSlotGroups.get(key)!.push({
         timestampIndex: event.timestampIndex,
+        time: currentTime,
         character: {
           id: character.id,
           label: character.label ?? character.job.name,
@@ -70,10 +75,9 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
     }
   }
 
-  for (const [key, conflicting] of sharedSlotGroups.entries()) {
+  for (const conflicting of sharedSlotGroups.values()) {
     if (conflicting.length > 1) {
-      const [tsIndexStr] = key.split("-");
-      const timestampIndex = parseInt(tsIndexStr);
+      const timestampIndex = conflicting[0].timestampIndex;
       const ts = timestamps[timestampIndex];
       if (!ts) continue;
 
@@ -83,7 +87,7 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
         message: `Multiple ${conflicting[0].ability.name} abilities assigned at the same time (${conflicting.map((c) => c.character.label).join(", ")})`,
         timestampIndex,
         timestampLabel: ts.label,
-        time: ts.time,
+        time: conflicting[0].time,
         conflicting: conflicting.map((c) => ({
           character: c.character.label,
           ability: c.ability.name,
@@ -93,4 +97,12 @@ export function validatePlan(plan: PlanWithRelations): ValidationIssue[] {
   }
 
   return issues;
+}
+
+function getEventTime(
+  event: { timestampIndex: number; time?: number | null },
+  timestamps: TimestampEntry[],
+) {
+  if (event.time && event.time > 0) return event.time;
+  return timestamps[event.timestampIndex]?.time ?? event.time ?? 0;
 }

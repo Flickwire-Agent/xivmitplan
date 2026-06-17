@@ -40,7 +40,13 @@ type Character = {
   label: string;
   slotIndex: number;
   abilities: Ability[];
-  events: Array<{ id: string; timestampIndex: number; abilityId: string; note: string | null }>;
+  events: Array<{
+    id: string;
+    timestampIndex: number;
+    time: number;
+    abilityId: string;
+    note: string | null;
+  }>;
 };
 
 interface PartyRosterProps {

@@ -1,18 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 
 function createPrismaClient() {
-  const dbUrl = process.env.DATABASE_URL || "file:./dev.db";
-  if (dbUrl.startsWith("postgresql") || dbUrl.startsWith("postgres://")) {
-    const { PrismaPg } = require("@prisma/adapter-pg") as typeof import("@prisma/adapter-pg");
-    const adapter = new PrismaPg({ connectionString: dbUrl });
-    return new PrismaClient({ adapter });
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (!dbUrl) {
+    throw new Error("DATABASE_URL is required");
   }
-  const { PrismaLibSql } =
-    require("@prisma/adapter-libsql") as typeof import("@prisma/adapter-libsql");
-  const path = require("path");
-  const filePath = dbUrl.replace("file:", "").trim();
-  const absolutePath = path.resolve(filePath);
-  const adapter = new PrismaLibSql({ url: `file://${absolutePath}` });
+
+  const { PrismaPg } = require("@prisma/adapter-pg") as typeof import("@prisma/adapter-pg");
+  const adapter = new PrismaPg({ connectionString: dbUrl });
   return new PrismaClient({ adapter });
 }
 

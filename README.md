@@ -13,7 +13,7 @@ A web application for **Final Fantasy XIV** raid parties to plan mitigation and 
 | Icons     | lucide-react                                     |
 | Charts    | Mantine Charts                                   |
 | State     | React hooks + URL params                         |
-| Hosting   | pm2 (local)                                      |
+| Hosting   | systemd user service (local)                     |
 
 ## Getting Started
 
@@ -111,21 +111,20 @@ src/
 
 ## Deployment
 
-Managed by **pm2** — runs locally on this machine.
+Managed by a **systemd user service** — runs locally on this machine.
 
 ```bash
 # Build the Next.js app
 pnpm build
 
-# Start/Restart via pm2
-pm2 start npm --name xivmitplan -- start
-pm2 restart xivmitplan
+# Start/Restart via systemd
+systemctl --user restart xivmitplan
 
 # View logs
-pm2 logs xivmitplan
+journalctl --user -u xivmitplan -f
 ```
 
-**Environment variables** are injected by pm2 (stored in `~/.pm2/dump.pm2`):
+**Environment variables** are defined in the systemd unit file (`~/.config/systemd/user/xivmitplan.service`):
 
 - `DATABASE_URL` — PostgreSQL connection string
 - `APP_BASE_URL` — `http://localhost:3000`
@@ -134,7 +133,7 @@ pm2 logs xivmitplan
 After deploying code changes:
 
 1. `pnpm build`
-2. `pm2 restart xivmitplan`
+2. `systemctl --user restart xivmitplan`
 
 ## Database
 

@@ -59,24 +59,23 @@ Run tests before committing to catch regressions.
 
 # Deployment
 
-Managed by **pm2** — runs locally on this machine.
+Managed by a **systemd user service** — runs locally on this machine.
 
 ```bash
 # Build the Next.js app
 pnpm build
 
-# Start/Restart via pm2
-pm2 start npm --name xivmitplan -- start
-pm2 restart xivmitplan
+# Start/Restart via systemd
+systemctl --user restart xivmitplan
 
 # View logs
-pm2 logs xivmitplan
+journalctl --user -u xivmitplan -f
 
 # Monitor
-pm2 monit
+systemctl --user status xivmitplan
 ```
 
-**Environment variables** are injected by pm2 (stored in `~/.pm2/dump.pm2`):
+**Environment variables** are defined in the systemd unit file (`~/.config/systemd/user/xivmitplan.service`):
 
 - `DATABASE_URL` — PostgreSQL connection string (`postgresql://xivmitplan:mitplan_local_dev@localhost:5432/xivmitplan`)
 - `APP_BASE_URL` — `http://localhost:3000`
@@ -85,8 +84,8 @@ pm2 monit
 After deploying code changes:
 
 1. `pnpm build`
-2. `pm2 restart xivmitplan`
+2. `systemctl --user restart xivmitplan`
 
-Two other pm2-managed apps run on this machine: `xivarbitrage` and `opencode-web`.
+Two other systemd user services run on this machine: `xivarbitrage` and `opencode-web`.
 
 <!-- END:deployment -->

@@ -76,11 +76,13 @@ function makePlan(
       },
       events: c.events.map((e) => {
         const abil = c.abilities.find((a) => a.id === e.abilityId)!;
+        const timestamp = timestamps[e.timestampIndex];
         return {
           id: `evt-${e.timestampIndex}-${e.abilityId}`,
           planCharacterId: c.id,
           planId: null,
           timestampIndex: e.timestampIndex,
+          time: timestamp?.time ?? 0,
           abilityId: e.abilityId,
           note: null,
           ability: abil,
